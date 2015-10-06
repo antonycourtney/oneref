@@ -1,0 +1,23 @@
+{
+  "name": "oneref",
+  "version": "0.1.0",
+  "description": "An SML-inspired mutable ref cell that notifies listeners when set",
+  "main": "lib/oneRef.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/antonycourtney/oneref.git"
+  },
+  "dependencies": {
+    "events": "^1.0.2",
+    "object-assign": "^4.0.1"
+  },
+  "devDependencies": {
+    "babel": "^5.8.23",
+    "babel-eslint": "^4.1.3",
+    "babel-runtime": "^5.8.25",
+    "eslint": "^1.5.0"
+  },
+  "scripts": {
+    "build": "rm -rf lib/* && babel src --optional runtime --stage 0 --out-dir lib"
+  }
+}
