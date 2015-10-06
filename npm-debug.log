@@ -1,0 +1,92 @@
+0 info it worked if it ends with ok
+1 verbose cli [ 'node', '/usr/local/bin/npm', 'publish' ]
+2 info using npm@2.1.5
+3 info using node@v0.10.32
+4 verbose publish [ '.' ]
+5 silly cache add args [ '.', null ]
+6 verbose cache add spec .
+7 silly cache add parsed spec { raw: '.',
+7 silly cache add   scope: null,
+7 silly cache add   name: null,
+7 silly cache add   rawSpec: '.',
+7 silly cache add   spec: '/Users/antony/home/src/js/oneref',
+7 silly cache add   type: 'directory' }
+8 verbose tar pack [ '/Users/antony/.npm/oneref/0.1.0/package.tgz',
+8 verbose tar pack   '/Users/antony/home/src/js/oneref' ]
+9 verbose tarball /Users/antony/.npm/oneref/0.1.0/package.tgz
+10 verbose folder /Users/antony/home/src/js/oneref
+11 info prepublish oneref@0.1.0
+12 verbose addLocalTarball adding from inside cache /Users/antony/.npm/oneref/0.1.0/package.tgz
+13 silly cache afterAdd oneref@0.1.0
+14 verbose afterAdd /Users/antony/.npm/oneref/0.1.0/package/package.json not in flight; writing
+15 verbose afterAdd /Users/antony/.npm/oneref/0.1.0/package/package.json written
+16 silly publish { name: 'oneref',
+16 silly publish   version: '0.1.0',
+16 silly publish   description: 'Minimalist Unidirectional Data Flow for React',
+16 silly publish   main: 'lib/oneRef.js',
+16 silly publish   repository:
+16 silly publish    { type: 'git',
+16 silly publish      url: 'https://github.com/antonycourtney/oneref.git' },
+16 silly publish   dependencies:
+16 silly publish    { 'babel-runtime': '^5.8.25',
+16 silly publish      events: '^1.0.2',
+16 silly publish      'object-assign': '^4.0.1' },
+16 silly publish   devDependencies: { babel: '^5.8.23', 'babel-eslint': '^4.1.3', eslint: '^1.5.0' },
+16 silly publish   scripts: { build: 'rm -rf lib/* && babel src --optional runtime --stage 0 --out-dir lib' },
+16 silly publish   readme: '# OneRef - Minimalist Unidirectional Data Flow for React \n\nThis repository contains the support code for OneRef, a a minimalist approach to unidirectional data flow for React applications. \nOneRef is an extremely lightweight alternative to\nFacebook\'s [Flux](http://facebook.github.io/flux/) application architecture.\n\nOneRef is based on defining a composite purely functional (immutable) data type\nwith [Immutable.js](https://facebook.github.io/immutable-js/) to represent the entirety of\nthe current application state. A value of this type is stored in a single top-level mutable ref cell that will notify registered listeners when the ref cell is updated.\n\nThe code in [src/oneRef.js](src/oneRef.js) provides the (trivial) implementation of this mutable ref cell, and the one auxiliary support function (`refUpdater`) used to construct callbacks. \n\nSee **blog post (TODO: link!)** and companion **examples repository(TODO: link!)** for details on how to use this library.\n\n# Building the Library\n\nThe implementation is written in ES6 and transpiled with Babel.\n\nTo install necessary build dependencies:\n\n    npm install\n\nTo compile the library to ES5 using Babel:\n\n    npm run build\n\n# License\n\nThis code is distributed under the MIT license, see the LICENSE file for complete information.\n',
+16 silly publish   readmeFilename: 'README.md',
+16 silly publish   gitHead: 'c918cfaafcf3678e5026e97d01714957e06f3dbf',
+16 silly publish   bugs: { url: 'https://github.com/antonycourtney/oneref/issues' },
+16 silly publish   homepage: 'https://github.com/antonycourtney/oneref',
+16 silly publish   _id: 'oneref@0.1.0',
+16 silly publish   _shasum: '380ed98161264a79787583eaa22d07953c9b2335',
+16 silly publish   _from: '.' }
+17 verbose mapToRegistry name oneref
+18 verbose mapToRegistry uri https://registry.npmjs.org/oneref
+19 verbose publish registryBase https://registry.npmjs.org/
+20 verbose request on initialization, where is /oneref
+21 verbose request after pass 1, where is /oneref
+22 verbose request url raw /oneref
+23 verbose request resolving registry [ 'https://registry.npmjs.org/', './oneref' ]
+24 verbose request after pass 2, where is https://registry.npmjs.org/oneref
+25 verbose request sending authorization for write operation
+26 info attempt registry request try #1 at 07:04:04
+27 verbose request using bearer token for auth
+28 verbose request id 1ae1e4f37ce09662
+29 http request PUT https://registry.npmjs.org/oneref
+30 http 403 https://registry.npmjs.org/oneref
+31 verbose headers { 'content-type': 'application/json',
+31 verbose headers   'cache-control': 'max-age=60',
+31 verbose headers   'content-length': '95',
+31 verbose headers   'accept-ranges': 'bytes',
+31 verbose headers   date: 'Tue, 06 Oct 2015 14:04:05 GMT',
+31 verbose headers   via: '1.1 varnish',
+31 verbose headers   connection: 'keep-alive',
+31 verbose headers   'x-served-by': 'cache-lax1425-LAX',
+31 verbose headers   'x-cache': 'MISS',
+31 verbose headers   'x-cache-hits': '0',
+31 verbose headers   'x-timer': 'S1444140244.820670,VS0,VE234' }
+32 error publish Failed PUT 403
+33 verbose stack Error: "You cannot publish over the previously published version 0.1.0." : oneref
+33 verbose stack     at RegClient.<anonymous> (/usr/local/lib/node_modules/npm/node_modules/npm-registry-client/lib/request.js:260:14)
+33 verbose stack     at Request._callback (/usr/local/lib/node_modules/npm/node_modules/npm-registry-client/lib/request.js:197:65)
+33 verbose stack     at Request.self.callback (/usr/local/lib/node_modules/npm/node_modules/request/request.js:199:22)
+33 verbose stack     at Request.emit (events.js:98:17)
+33 verbose stack     at Request.<anonymous> (/usr/local/lib/node_modules/npm/node_modules/request/request.js:1160:14)
+33 verbose stack     at Request.emit (events.js:117:20)
+33 verbose stack     at IncomingMessage.<anonymous> (/usr/local/lib/node_modules/npm/node_modules/request/request.js:1111:12)
+33 verbose stack     at IncomingMessage.emit (events.js:117:20)
+33 verbose stack     at _stream_readable.js:943:16
+33 verbose stack     at process._tickCallback (node.js:419:13)
+34 verbose statusCode 403
+35 verbose pkgid oneref
+36 verbose cwd /Users/antony/home/src/js/oneref
+37 error Darwin 15.0.0
+38 error argv "node" "/usr/local/bin/npm" "publish"
+39 error node v0.10.32
+40 error npm  v2.1.5
+41 error code E403
+42 error "You cannot publish over the previously published version 0.1.0." : oneref
+43 error If you need help, you may report this error at:
+43 error     <http://github.com/npm/npm/issues>
+44 verbose exit [ 1, true ]
