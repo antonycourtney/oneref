@@ -1,8 +1,8 @@
 {
   "name": "oneref",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Minimalist Unidirectional Data Flow for React",
-  "main": "lib/oneRef.js",
+  "main": "lib/index.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/antonycourtney/oneref.git"
@@ -10,7 +10,8 @@
   "dependencies": {
     "babel-runtime": "^5.8.25",
     "events": "^1.0.2",
-    "object-assign": "^4.0.1"
+    "object-assign": "^4.0.1",
+    "react": "^0.13.3"    
   },
   "devDependencies": {
     "babel": "^5.8.23",
