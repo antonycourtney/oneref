@@ -1,24 +1,28 @@
 {
   "name": "oneref",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Minimalist Unidirectional Data Flow for React",
   "main": "lib/index.js",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/antonycourtney/oneref.git"
   },
   "dependencies": {
-    "babel-runtime": "^5.8.25",
-    "events": "^1.0.2",
+    "babel-runtime": "^6.3.19",
+    "events": "^1.1.0",
     "object-assign": "^4.0.1",
-    "react": "^0.13.3"    
+    "react": "^0.14.3"
   },
   "devDependencies": {
-    "babel": "^5.8.23",
-    "babel-eslint": "^4.1.3",
-    "eslint": "^1.5.0"
+    "babel": "^6.3.26",
+    "babel-cli": "^6.3.17",
+    "babel-eslint": "^5.0.0-beta6",
+    "babel-preset-es2015": "^6.3.13",
+    "babel-preset-react": "^6.3.13",
+    "eslint": "^1.10.3"
   },
   "scripts": {
-    "build": "rm -rf lib/* && babel src --optional runtime --stage 0 --out-dir lib"
+    "build": "rm -rf lib/* && babel src --optional runtime --stage 0 --presets=es2015,react --out-dir lib"
   }
 }
