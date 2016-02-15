@@ -20,9 +20,9 @@ To install necessary build dependencies:
 
     npm install
 
-To compile the library to ES5 using Babel:
+In addition to installing dependencies, that should automatically run the `prepublish` script to compile the library sources to ES5 using Babel.  If you need to redo this step for some reason:
 
-    npm run build
+    npm run prepublish
 
 # License
 
