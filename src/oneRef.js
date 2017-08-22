@@ -22,7 +22,7 @@ export class Ref extends EventEmitter {
    */
   getValue() {
     return this._value;
-  } 
+  }
 
   /**
    * update contents of this ref cell and notify any listeners
@@ -30,6 +30,15 @@ export class Ref extends EventEmitter {
   setValue(v) {
     this._value = v;
     this.emit("change");
+  }
+
+  /**
+   * convenience utility to apply a state => state function and save the result.
+   * returns the updated state.
+   */
+  update(f) {
+    this.setValue(f(this.getValue()));
+    return this._value;
   }
 }
 
@@ -40,9 +49,16 @@ export class Ref extends EventEmitter {
  * applies it to the current value in ref and sets ref to the result (which
  * will notify registered listeners).
  *
- *     refUpdater: (ref: Ref<A>) => (uf: (A) => A) => void
+ *     refUpdater: (ref: Ref<A>) => (uf: (A) => A) => A
  *
  * We use Currying here so that we can partially apply refUpdater
- * to obtain an updater function that can passed down to actions. 
+ * to obtain an updater function that can passed down to actions.
+ * Returns: the updated state, to enable composition (chaining) of
+ * update actions.
  */
-export const refUpdater = (ref) => (uf) => { ref.setValue(uf(ref.getValue())); };
+export const refUpdater = (ref) => (uf) => {
+  const prevState = ref.getValue();
+  const nextState = uf(prevState);
+  ref.setValue(nextState);
+  return nextState;
+};
