@@ -1,0 +1,22 @@
+{
+  "name": "oneref",
+  "version": "1.0.0",
+  "description": "Minimalist Unidirectional Data Flow for React",
+  "main": "dist/oneref.js",
+  "types": "dist/oneref.d.ts",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/antonycourtney/oneref.git"
+  },
+  "peerDependencies": {},
+  "dependencies": {
+  },
+  "devDependencies": {
+    "rimraf": "^2.6.3"
+  },
+  "scripts": {
+    "clean": "rimraf dist",
+    "build": "tsc"
+  }
+}
