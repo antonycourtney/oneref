@@ -1,7 +1,15 @@
 
-# TodoMVC Example for oneref
+# Multi-Todo Example for oneref
 
-This is the classic [http://todomvc.com/](TodoMVC) example for oneref.
+This is an example of component composition for components developed using oneref.
+
+The sources here adapt the TodoMVC example found in `../oneref-example-todomvc`
+to support multiple TODO lists -- one for work todos, one for personal todos.
+Ideally we would literally share most of the source files between these two packages.
+However, this would require setting up the source for the initial example to act as
+both an application and a library, which create-react-app understandably doesn't support.
+Since this is purely a pedagogical example, I decided to copy the source files rather
+than eject.
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
