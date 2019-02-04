@@ -13,14 +13,33 @@ export interface StateRefProps<S> {
     setState: StateSetter<S>  
 }
 
+type StateEffect<S> = (appState: S, setState: StateSetter<S>) => (void | (() => void));
+
 /*
  * A higher-order component that holds the single mutable ref cell for top-level app state
  *
  */
-export const appContainer = 
-    <AS extends {}, P extends {}>(s0: AS, Comp: React.ComponentType<P & StateRefProps<AS>>): React.FunctionComponent<P> => props => {
+export const appContainer = <AS extends {}, P extends {}>(
+    s0: AS, 
+    Comp: React.ComponentType<P & StateRefProps<AS>>,
+    initialEffects: StateEffect<AS>[] = [],
+    onChangeEffects: StateEffect<AS>[] = []): React.FunctionComponent<P> => props => {
+
     const [appState, setState] = React.useState(s0);
 
+    const composedEffect = (effList: StateEffect<AS>[]) => () => {
+        const mbCleanups = effList.map(eff => eff(appState, setState));
+        return (() => {
+            for (var mbc of mbCleanups) {
+                if (typeof mbc === "function") {
+                    mbc();
+                }
+            }
+        });
+    }
+
+    React.useEffect(composedEffect(initialEffects), []);
+    React.useEffect(composedEffect(onChangeEffects));
     return (
         <Comp {...props} appState={appState} setState={setState} />
     );
