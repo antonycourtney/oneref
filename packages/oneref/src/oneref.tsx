@@ -36,7 +36,7 @@ export const appContainer =
 type ProjectFunc<OT, IT> = (o: OT) => IT
 type InjectFunc<OT, IT> = (o: OT, i: IT) => OT  // i.e. functional update
 type FocusFunc<OT, IT> = (o: OT, updateOuter: StateSetter<OT>) => [IT, StateSetter<IT>]
-export const mkFocus =
+export const focus =
     <OT extends {},IT extends {}>(view: ProjectFunc<OT,IT>, inject: InjectFunc<OT,IT>): FocusFunc<OT, IT> => (o, updateOuter) => {
         const updInner = (itf: StateTransformer<IT>) => updateOuter(os => inject(os, itf(view(os))));
         return ([view(o), updInner]);

@@ -6,9 +6,8 @@ import TodoListEditor from './TodoListEditor';
 
 type MultiTodoListEditorProps = {} & oneref.StateRefProps<MultiTodoAppState>;
 
-const workFocus = oneref.mkFocus<MultiTodoAppState, TodoAppState>(as => as.work, (as, w) => as.set('work', w));
-const personalFocus = oneref.mkFocus<MultiTodoAppState, TodoAppState>(as => as.personal, (as, p) => as.set('personal', p));
-
+const workFocus = oneref.focus<MultiTodoAppState, TodoAppState>(as => as.work, (as, w) => as.set('work', w));
+const personalFocus = oneref.focus<MultiTodoAppState, TodoAppState>(as => as.personal, (as, p) => as.set('personal', p));
 
 const MultiTodoListEditor: React.FunctionComponent<MultiTodoListEditorProps> = ({appState, setState}: MultiTodoListEditorProps) => {
     const [workTodos, updateWorkTodos] = workFocus(appState, setState);
