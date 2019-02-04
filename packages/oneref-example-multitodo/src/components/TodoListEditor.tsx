@@ -22,9 +22,11 @@ const FILTERS_MAP = new Map<string, (item: TodoItem) => boolean>([
   [ COMPLETED_TODOS, (item: TodoItem) => item.complete ]
 ]);
 
-type TodoListEditorProps = {} & oneref.StateRefProps<TodoAppState>;
+type TodoListEditorProps = {
+  label: string
+} & oneref.StateRefProps<TodoAppState>;
 
-const TodoListEditor: React.FunctionComponent<TodoListEditorProps> = ({appState, setState}: TodoListEditorProps) => {
+const TodoListEditor: React.FunctionComponent<TodoListEditorProps> = ({label, appState, setState}: TodoListEditorProps) => {
   const [nowShowing, setNowShowing] = React.useState(ALL_TODOS);
 
   const allTodos = appState.getAll();
@@ -33,7 +35,7 @@ const TodoListEditor: React.FunctionComponent<TodoListEditorProps> = ({appState,
 
   return (
     <>
-      <Header setState={setState} />
+      <Header label={label} setState={setState} />
       <MainSection
           todos={filteredTodos}
           areAllComplete={appState.areAllComplete()}

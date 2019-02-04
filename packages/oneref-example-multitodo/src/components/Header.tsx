@@ -14,10 +14,11 @@ import * as actions from '../actions';
 import {StateTransformer, StateSetter} from 'oneref';
 
 interface HeaderProps {
+  label: string
   setState: StateSetter<TodoAppState>
 }
 
-const Header = ({ setState }: HeaderProps) => {
+const Header = ({ label, setState }: HeaderProps) => {
 
   const onSave = (text: string) => {
     if (text.trim()){
@@ -27,7 +28,7 @@ const Header = ({ setState }: HeaderProps) => {
 
   return (
     <header className="header">
-      <h1>todos</h1>
+      <h1>{label}</h1>
       <TodoTextInput
           className="new-todo"
           placeholder="What needs to be done?"
