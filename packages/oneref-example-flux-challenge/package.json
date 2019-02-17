@@ -1,5 +1,5 @@
 {
-  "name": "oneref-example-todomvc",
+  "name": "oneref-example-flux-challenge",
   "version": "1.0.0",
   "private": true,
   "dependencies": {
@@ -9,9 +9,7 @@
     "classnames": "^2.2.6",
     "immutable": "^4.0.0-rc.12",
     "oneref": "1.0.0",
-    "react-scripts": "2.1.5",
-    "todomvc-app-css": "^2.1.2",
-    "todomvc-common": "^1.0.5"
+    "react-scripts": "2.1.5"
   },
   "scripts": {
     "start": "react-scripts start",

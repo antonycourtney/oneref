@@ -35,3 +35,6 @@ const initialAppState = new TodoAppState();
 const TodoApp = appContainer<TodoAppState, {}>(initialAppState, TodoListEditor, [initEffect], [changeEffect]);
 
 ReactDOM.render(<TodoApp />, document.getElementsByClassName('todoapp')[0]);
+
+// todoServer.tryDelay();
+todoServer.genConsumer();

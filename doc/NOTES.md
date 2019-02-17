@@ -225,3 +225,102 @@ If we conflate asynchrony with state, it's very easy for every state update to h
 its own tick...
 
 Enough talk!  Let's try and write a typed definition of oneRef and actions...
+
+----
+A couple of refs on using update form of setState for state maintenance:
+
+https://medium.com/@wisecobbler/using-a-function-in-setstate-instead-of-an-object-1f5cfd6e55d1
+
+https://github.com/facebook/react/issues/9066#issuecomment-282481742
+
+
+-------
+
+Started to think about:
+/*
+ * helper for async operations.
+ * 
+ * Usage:
+ * 
+ *    const runAsync = updateAsync(setState);
+ * 
+ *    ...
+ * 
+ *       onClick = {() => runAsync(actions.appAction(...))}
+ */
+export const updateAsync = <T extends {}>(setState: StateSetter<T>) => (pact: Promise<StateTransformer<T>>): void => {
+    pact.then(setState);
+}
+
+/*
+ * chain async actions sequentially (monadic bind operation):
+ *
+ */
+type PST<T, A> = Promise<[StateTransformer<T>, A]>;
+export const chainAction = async <T extends {},A extends {}, B extends {}> (m0: PST<T, A>, bf: (a: A) => PST<T, B>) => async (s0: T) => {
+    const [stf0, a] = await m0;
+    const s1 = stf0(s0);
+    const []
+}
+
+/* 
+ * ??? Should we possible move the A into StateTransformer, so
+ * that instead of:
+ *   export type StateTransformer<T> = (s: T) => T
+ * we have:
+ *   export type StateTransformer<T, A> = (s: T) => [T,A]
+ * that would allow us to return values derived from the current state...
+ */
+
+/*
+ * Hmmmm, we need to think very carefully here.
+ * The whole point of using a synchronous (State => State) function returned
+ * from an async operation is that the operation is performed atomically against
+ * the current state.
+ * 
+ * What we really want when chaining op1 and op2 is:
+ *    [x, stf1] = await op1;
+ *    setState(stf1);
+ *    [y, stf2] = await op2(x);
+ *    setState(stf2);
+ *    return y;
+ * 
+ * Alternatively, if the result value comes from the state transformer function, we could have:
+ *    stf1 = await op1;
+ *    x = updateState(stf1);
+ *    stf2 = await op2(x);
+ *    y = updateState(stf2);
+ *    return y;
+ * 
+ * BUT is that a Promise<ST<S,Y>> ?  NO!  Because the state needs to be updated between the update ops. Grrr. :-(
+ */
+
+OK, we have a real challenge because React's setState() operation doesn't have a return value.
+So our options seem to be:
+   - Wrap an action's StateTransformer<T> result into a side-effecting one.
+   - Use something like onChange effects to run the next action after the
+     state update.  (Note that other state updates might happen first, but there is probably
+     nothing we can do to avoid that.
+
+A thought:
+
+It's somewhat interesting that we pass setState() explicitly in to StateEffect<S>, but
+we have most actions just return a StateTransformer<S>.
+Interestingly, we can't alter the signature of StateEffect<S> to return a StateTransformer,
+because the whole point is that effects often need to run async functions that only perform
+their desired effect after the operation completes.
+
+Also (as in the case of a subscription), there may be multiple calls to setState....
+
+Hmmmmm....
+
+What if we instead had a Stream<StateTransformer<S>> ?
+
+Let's look at asynchronous iterators....
+
+Hmmmm, so, at least for the simple subscription case, this could be exactly
+covered by AsyncIterator<StateTransformer<S>>
+
+Also:  What are the cases in Tabli where we need to read AppState in the middle of an
+async operation?
+
