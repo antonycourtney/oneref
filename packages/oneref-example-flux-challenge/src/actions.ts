@@ -31,6 +31,7 @@ export function requestSithInfo(append: boolean,sithId: number,updater: StateSet
   xhr.onreadystatechange = () => {
     if (xhr.readyState===4 && xhr.status===200) {
       const parsedSithStatus = JSON.parse(xhr.response);
+      console.log('parsed sith status: ', parsedSithStatus);
       updater((prevState) => {
         const st = prevState.updateSithStatus(parsedSithStatus);
         // Need invokeLater since we're within updater
@@ -52,6 +53,7 @@ export function requestSithInfo(append: boolean,sithId: number,updater: StateSet
 function fillView(st: DashboardAppState, updater: StateSetter<DashboardAppState>) {
   const lastSith = st.lastKnownSith();
   if (st.needsApprentice(lastSith)) {
+    console.log('needs apprentice: ', lastSith!.info.toJS());
     requestSithInfo(true,lastSith!.info.apprenticeId,updater);
   } else {
     const firstSith = st.firstKnownSith();

@@ -35,8 +35,8 @@ export default class DashboardAppState extends Immutable.Record(defaultDashboard
       return this; // id has been scrolled out of view
     const sithInfo = new SithInfo({
       id: pstat.id, name: pstat.name, homeworld: new PlanetInfo(pstat.homeworld),
-      masterId: pstat.master ? pstat.master.id : null,
-      apprenticeId: pstat.apprentice ? pstat.apprentice.id : null
+      masterId: ((pstat.master!==null) && (pstat.master.id!==null)) ? pstat.master.id : INVALID_ID,
+      apprenticeId: ((pstat.apprentice!==null) && (pstat.apprentice.id)) ? pstat.apprentice.id : INVALID_ID
     });
     const updRow = (this.sithList.get(idx) as SithRow).set('info', sithInfo).set('request', null);
     const updList = this.sithList.set(idx, updRow);
