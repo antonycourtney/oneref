@@ -75,7 +75,7 @@ export default class DashboardAppState extends Immutable.Record(defaultDashboard
     if (!ri)
       return false;
     const masterId = ri.info.masterId;
-    return (masterId && (ri.index > 0) && this.emptyRow(ri.index-1));
+    return ((masterId !== INVALID_ID) && (ri.index > 0) && this.emptyRow(ri.index-1));
   }
 
   canScrollDown() {

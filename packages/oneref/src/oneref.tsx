@@ -13,7 +13,9 @@ export interface StateRefProps<S> {
     setState: StateSetter<S>  
 }
 
-type StateEffect<S> = (appState: S, setState: StateSetter<S>) => (void | (() => void));
+// ?? TODO: Do we want to add optional cleanup / unsubscribe for unmounting?
+export type InitialStateEffect<S> = (appState: S) => AsyncIterable<StateTransformer<S>>
+export type StateEffect<S> = (appState: S, setState: StateSetter<S>) => (void | (() => void));
 
 /*
  * A higher-order component that holds the single mutable ref cell for top-level app state
@@ -22,11 +24,26 @@ type StateEffect<S> = (appState: S, setState: StateSetter<S>) => (void | (() => 
 export const appContainer = <AS extends {}, P extends {}>(
     s0: AS, 
     Comp: React.ComponentType<P & StateRefProps<AS>>,
-    initialEffects: StateEffect<AS>[] = [],
+    initialEffects: InitialStateEffect<AS>[] = [],
     onChangeEffects: StateEffect<AS>[] = []): React.FunctionComponent<P> => props => {
 
     const [appState, setState] = React.useState(s0);
 
+    async function stStreamReader(stream: AsyncIterable<StateTransformer<AS>>): Promise<void> {
+        for await (const st of stream) {
+            setState(st);
+        }
+    }
+
+    const composeInitEffects = (effList: InitialStateEffect<AS>[]) => () => {
+        const stStreams = effList.map(eff => eff(appState));
+
+        for (let stStream of stStreams) {
+            stStreamReader(stStream);
+        }
+    }
+
+    // TODO: probably inline into useEffect
     const composedEffect = (effList: StateEffect<AS>[]) => () => {
         const mbCleanups = effList.map(eff => eff(appState, setState));
         return (() => {
@@ -38,7 +55,7 @@ export const appContainer = <AS extends {}, P extends {}>(
         });
     }
 
-    React.useEffect(composedEffect(initialEffects), []);
+    React.useEffect(composeInitEffects(initialEffects), []);
     React.useEffect(composedEffect(onChangeEffects));
     return (
         <Comp {...props} appState={appState} setState={setState} />
@@ -60,3 +77,5 @@ export const focus =
         const updInner = (itf: StateTransformer<IT>) => updateOuter(os => inject(os, itf(view(os))));
         return ([view(o), updInner]);
     }
+
+export {utils as utils} from './utils';

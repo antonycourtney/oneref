@@ -50,7 +50,7 @@ export class SithInfo extends Immutable.Record(defaultSithInfoProps) {
 interface SithRowProps {
   id: number, // requested Sith id
   info: SithInfo | null, // filled in with SithInfo
-  request: XMLHttpRequest | null // XHR while request pending
+  request: AbortController | null // AbortController while request pending
 }
 
 const defaultSithRowProps : SithRowProps = {

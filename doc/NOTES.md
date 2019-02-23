@@ -324,3 +324,208 @@ covered by AsyncIterator<StateTransformer<S>>
 Also:  What are the cases in Tabli where we need to read AppState in the middle of an
 async operation?
 
+------
+2/18/19:
+
+It's perhaps a little odd that we pass setState:
+
+```typescript
+type StateEffect<S> = (appState: S, setState: StateSetter<S>) => (void | (() => void));
+```
+
+to effects, but not to actions.
+
+actions are functions that return StateTransformer<S>.
+
+To account for actions that may need a follow-on effect, we really want something like:
+
+```typescript
+type Action<S> = (appState: S) => StateTransformer<S>
+```
+(that's a fairly wide argument type; we might want to restrict it.)
+
+Also, what if we factored out the state update from StateEffect the way we did with actions?
+Then we'd have some simpler form of effect that would have the same signature,
+i.e.:
+```typescript
+type SimpleEffect<S> = (appState: S) => StateTransformer<S>
+```
+The problems with this are that:
+(a) they don't account for asynchrony at all
+(b) they don't allow repeated (async) calls to setState, as might happen with a subscription.
+
+The trick for defining recursive types in TypeScript:
+
+```typescript
+type MyTuple<T> = [string, { [key: string]: string }, T[]];
+interface Node extends MyTuple<Node> { }
+```
+
+so we just need an extra template parameter for the recursive type, and tie the knot with an `interface`.
+
+-----
+2/20/19:
+
+Some attempts:
+
+```typescript
+// An alternative encoding:
+type AltStateEffect<S> = (appState: S) => StateTransformer<S>
+// A state transformer that can return an additional value with the new state:
+type AltStateTransformer<S, A> = (s: S) => [S, A]
+type RecChainedEffect<S, T> = (appState: S) => Promise<AltStateTransformer<S, T>>
+type AuxAction<S, T> = AltStateEffect<S> | RecChainedEffect<T, S>
+class Action<S> { }
+interface TerminalAction<S> extends Action<S> {
+    act: AltStateEffect<S>
+}
+interface ChainedAction<S> extends Action<S> {
+    act: RecChainedEffect<S, Action<S>>
+}
+
+type ActionRunner<S> = (action: Action<S>) => void
+// But remember, for the simple case (TodoMVC) we really only care about ST or AltST;
+// What if we break the recursion and start there:
+// We really just want some way to distinguish between returning a chained action and not...
+interface Action2<S> {
+    st: AltStateTransformer<S, RecChainedEffect<S, Action2<S>> | void>
+}
+type Action2Runner<S> = (action: Action2<S>) => void
+
+/*
+ * Another thought: Could we achieve chaining via multiple optional fields?
+ */
+interface Action3<S> {
+    pureST?: StateTransformer<S>
+    chainedST?: AltStateTransformer<S, RecChainedEffect<S, Action3<S>>>
+}
+// But if we're going to do that, probably inheritance is a better encoding, since
+// we want each instance to have exactly one such member....
+// So what we really want is:
+interface Action4<S> { }
+interface TeminalAction4<S> {
+    pureST: StateTransformer<S>
+}
+interface ChainedAction4<S> {
+    chainedST: AltStateTransformer<S, RecChainedEffect<S, Action4<S>>>
+}
+
+// I think that's it. Time for some cleanup!
+```
+
+----
+Here is a first cut at cleaning this up.
+But the use of subclassing of interfaces still seems icky.
+Can we possibly use a union in the return type of StateTransformer to clean things up?
+
+```typescript
+export type RawSimpleStateTransformer<S> = (s: S) => S
+// A state transformer that can return an aux value with the new state:
+type RawAuxStateTransformer<S, A> = (s: S) => [S, A]
+
+// 2. Could we use this union'ing of return type to simplify our GenericST
+// setup and avoid the type hierarchy?
+// A SimpleStateEffect returns either a Simple ST or a Simple ST paired with a
+// cleanup routine for the effect
+type SimpleStateEffect<S> = (appState: S) => RawSimpleStateTransformer<S> | [ RawSimpleStateTransformer<S>, () => void ]
+
+/*
+ * Helper for constructing a recursive type for an async effect that
+ * returns an auxiliary State Transformer.
+ * The auxiliary value returned from the state transformer is another
+ * async effect to be run on the next tick.
+ */
+type RecChainedEffect<S, T> = (appState: S) => Promise<RawAuxStateTransformer<S, T>>
+
+interface GeneralStateTransformer<S> { }
+interface IdStateTransformer<S> extends GeneralStateTransformer<S> { }
+interface SimpleStateTransformer<S> extends GeneralStateTransformer<S> {
+    st: RawSimpleStateTransformer<S>
+}
+interface ContStateTransformer<S> extends GeneralStateTransformer<S> {
+    auxST: RawAuxStateTransformer<S, RecChainedEffect<S, GeneralStateTransformer<S>>>
+}
+
+export type STRunner<S> = (st: GeneralStateTransformer<S>) => void
+// export type StateSetter<T> = (st: StateTransformer<T>) => void
+// type StateSetter<T> = React.Dispatch<React.SetStateAction<TodoAppState>>
+
+export interface StateRefProps<S> {
+    appState: S,
+    runST: STRunner<S>
+}
+```
+
+----
+1/20:
+Newer thought:  Maybe we're simply trying to hard with this recursive type.
+The truth is that, at least for the Flux challenge, I could probably accomplish everything needed with a simple onChangeEffect that
+runs on every render cycle....only downside I see is that effect has to always run, and since no easy way to pass params
+or capture vars in the effect that runs, need to store them in state.
+(Could possibly make an explicit type parameter arg for oneref app container as part of this if we really need...)
+Ooooh....we can even use generic parameter defaults:
+
+https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-3.html#generic-parameter-defaults
+```typescript
+private logData<T, S = {}>(operation: string, responseData: T, requestData?: S) {
+  // your implementation here
+}
+```
+
+Of course that still leaves the question on how we compose / chain async actions outside the render cycle, but we can
+tackle that separately.
+
+Also:
+Maybe we should structure the onChange effects as a stream transformer, consuming an AsyncIterator of AppState, and
+producing an AsyncIterator of StateTranformers.
+The initial effect could just provide an AsyncIterator of StateTransformer from an initial state.
+
+---
+2/21/19:
+
+Here's the bulk of the impl of oneref before I revert everything and go with a much
+simpler design:
+
+```typescript
+export type RawSimpleStateTransformer<S> = (s: S) => S
+// A SimpleStateEffect returns either a ST, optionally paired with a
+// cleanup routine for the effect
+type SimpleStateEffect<S> = (appState: S) => RawSimpleStateTransformer<S> | [ RawSimpleStateTransformer<S>, () => void ]
+
+// A state transformer that can return an aux value with the new state:
+type RawAuxStateTransformer<S, A> = (s: S) => [S, A | null]
+/*
+ * Helper for constructing a recursive type for an async effect that
+ * returns an auxiliary State Transformer.
+ * The auxiliary value returned from the state transformer is another
+ * async effect to be run on the next tick.
+ * TODO: Add in optional cleanup function...
+ */
+type RecChainedEffect<S, T> = (appState: S) => Promise<RawAuxStateTransformer<S, T | null>>
+
+// NO!  I think this is wrong....we need to have the Effect in the aux position of StateTransformer...
+interface GeneralSTEffect<S> {
+    eff: RecChainedEffect<S, GeneralSTEffect<S>>
+}
+
+// If we want to express the recursion via StateTransformer that's probably doable, but then
+// the ST would appear in aux position...
+
+
+interface GeneralStateTransformer<S> { 
+    st: RawAuxStateTransformer<S, RecChainedEffect<S, GeneralStateTransformer<S>>>
+}
+
+type GeneralEffect<S> = RecChainedEffect<S, GeneralStateTransformer<S>>
+
+
+export type STRunner<S> = (st: GeneralStateTransformer<S>) => void
+// export type StateSetter<T> = (st: StateTransformer<T>) => void
+// type StateSetter<T> = React.Dispatch<React.SetStateAction<TodoAppState>>
+```
+
+
+
+
+
+

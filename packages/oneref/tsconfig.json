@@ -6,9 +6,12 @@
         "target": "ES5",
         "lib": [
             "es6",
-            "dom"
+            "dom",
+            "dom.iterable",
+            "esnext.asynciterable"
         ],
-        "jsx": "react"   
+        "jsx": "react",
+        "downlevelIteration": true   
     },
     "include": [
         "./src/*"

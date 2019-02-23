@@ -59,7 +59,7 @@ async function* entryGenerator(genState: string[]): AsyncIterableIterator<string
 
 export async function genConsumer(): Promise<void> {
     console.log('genConsumer: entry');
-    const gen = entryGenerator(entries);
+    const gen: AsyncIterable<string> = entryGenerator(entries);
     for await (const s of gen) {
         console.log('genConsumer: ', s);
     }
