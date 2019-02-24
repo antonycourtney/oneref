@@ -14,13 +14,17 @@ interface RowInfo {
  */
 interface DashboardAppStateProps {
   obiWanLocation: PlanetInfo | null,      // null or PlanetInfo()
-  sithList: Immutable.List<SithRow | null> // fixed size (VIEWPORT_SIZE)
+  sithList: Immutable.List<SithRow | null>, // fixed size (VIEWPORT_SIZE)
+  oldRequests: Immutable.List<AbortController | null>
 }
 
 const defaultDashboardAppStateProps : DashboardAppStateProps = {
   obiWanLocation: null,      
-  sithList: Immutable.Repeat(null,VIEWPORT_SIZE).toList()
+  sithList: Immutable.Repeat(null,VIEWPORT_SIZE).toList(),
+  oldRequests: Immutable.List()
 }
+
+const isPending = (r: SithRow | null) => r!==null && r.request!==null;
 
 export default class DashboardAppState extends Immutable.Record(defaultDashboardAppStateProps) {
 
@@ -139,24 +143,37 @@ export default class DashboardAppState extends Immutable.Record(defaultDashboard
   }
 
   /**
+   * rows from sithList with requests pending:
+   */
+  pendingRows(): Immutable.List<SithRow> {
+    const pendingRows = this.sithList.filter(isPending) as Immutable.List<SithRow>;
+    return pendingRows;
+  }
+
+  /**
    * Clear any rows with pendings requests
    *
-   * @return {{nextState: DashboardAppState, oldRequests: Immutable.List<AbortController> }}
+   * Needed to satisfy this requirement:
+   * > When either the current planet indicator changes OR loaded new rows: check if
+   * > there is a displayed Dark Jedi whose home planet matches the current planet.
+   * > If true, then display that Dark Jedi in red text, and cancel ALL ongoing HTTP
+   * > requests for rows. Freeze the UI from scrolling until the current planet changes
+   * > again and there is no red-highlighted Dark Jedi anymore.
+   * 
    */
-  clearPendingRequests(): { nextState: DashboardAppState; oldRequests: Immutable.List<AbortController>; } {
-    const isPending = (r: SithRow | null) => r!==null && r.request!==null;
-    const pendingRows = this.sithList.filter(isPending) as Immutable.List<SithRow>;
+  clearPendingRequests(): this {
+    const pendingRows = this.pendingRows();
     const oldRequests = pendingRows.map((r) => r.request) as Immutable.List<AbortController>;
     const nextList = this.sithList.map((r) => isPending(r) ? null : r);
-    const nextState = this.set('sithList',nextList);
-    return { nextState, oldRequests };
+    const nextState = this.set('sithList',nextList).set('oldRequests', this.oldRequests.concat(oldRequests));
+    return nextState;
   }
 
   /** 
-   * adjust scroll position by specified amount
-   * returns: { nextState: AppState, oldRequests: List<XHR> }
+   * adjust scroll position by specified amount,
+   * moving any outdated requests to oldRequests
    */
-  scrollAdjust(delta: number) {
+  scrollAdjust(delta: number): this {
     const offset = -1 * delta;
     var updList, droppedRows;
     if (offset >= 0) {
@@ -172,7 +189,7 @@ export default class DashboardAppState extends Immutable.Record(defaultDashboard
       updList = headElems.concat(Immutable.Repeat(null,delta).toList());
     }
     const oldRequests = droppedRows.filter((r) => r!==null && r.request!==null).map((r) => r!.request);
-    const nextState = this.set('sithList',updList);
-    return {nextState,oldRequests};
+    const nextState = this.set('sithList',updList).set('oldRequests', this.oldRequests.concat(oldRequests));
+    return nextState;
   }
 };

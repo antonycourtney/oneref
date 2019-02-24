@@ -12,7 +12,10 @@ function invokeLater(f: TimerHandler) {
 export const updateObiWan = (parsedLocation: any): StateTransformer<DashboardAppState> =>
   state => {
     const obiWanLocation = new DT.PlanetInfo(parsedLocation);
-    return state.set('obiWanLocation',obiWanLocation);
+    const locState = state.set('obiWanLocation',obiWanLocation);
+    // Requirement: clear all pending if matching sith:
+    const nextState = locState.matchingSith() ? locState.clearPendingRequests() : locState;
+    return nextState;
   }
 
 
@@ -74,7 +77,7 @@ export function requestSithInfo(append: boolean, sithId: number, updater: StateS
 /*
  * fill view by generating more requests if necessary
  */
-function fillView(st: DashboardAppState, updater: StateSetter<DashboardAppState>) {
+export function fillView(st: DashboardAppState, updater: StateSetter<DashboardAppState>) {
   const lastSith = st.lastKnownSith();
   if (st.needsApprentice(lastSith)) {
     requestSithInfo(true,lastSith!.info.apprenticeId,updater);
@@ -86,12 +89,5 @@ function fillView(st: DashboardAppState, updater: StateSetter<DashboardAppState>
   }
 }
 
-export function scroll(scrollAmount: number, updater: StateSetter<DashboardAppState>) {
-  updater((prevState) => {
-    const {nextState, oldRequests} = prevState.scrollAdjust(scrollAmount);
-    oldRequests.forEach((req) => req ? req.abort() : null);  // cancel old requests
-    // Need invokeLater since we're within updater
-    invokeLater(() => fillView(nextState,updater));
-    return nextState;
-  });
-}
+export const scroll = (scrollAmount: number): StateTransformer<DashboardAppState> =>
+  st => st.scrollAdjust(scrollAmount);

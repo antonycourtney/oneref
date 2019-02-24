@@ -26,10 +26,16 @@ const init: InitialStateEffect<DashboardAppState> = (appState: DashboardAppState
 }
 
 const onStateChange: StateChangeEffect<DashboardAppState> = (appState: DashboardAppState, setState: StateSetter<DashboardAppState>) => {
+    console.log('onStateChange: pending requests: ', appState.pendingRows().count(), ', old Requests: ', appState.oldRequests.count());
+    // eventually:
+    //     oldRequests.forEach((req) => req ? req.abort() : null);  // cancel old requests
+    // Then need to clear those requests with setState.
+    // Then need to fillView...
+    actions.fillView(appState, setState);
 }
 
 const initialAppState = new DashboardAppState;
 
-const DashboardApp = appContainer<DashboardAppState, {}>(initialAppState, Dashboard, onStateChange);
+const DashboardApp = appContainer<DashboardAppState, {}>(initialAppState, Dashboard, init, onStateChange);
 
 ReactDOM.render(<DashboardApp />,   document.getElementById('app'));

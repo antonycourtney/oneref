@@ -12,13 +12,18 @@ interface SithScrollableListProps {
 }
 
 const SithScrollableList = ({appState, setState}: SithScrollableListProps) => {
+    /*
+     * Note: It's tempting to just directly cancel the requests that are out
+     * of view in appState. But remember that appState is likely stale
+     * by the time these callbacks run.
+     */
     const handleScrollUp = (event: React.MouseEvent) => {
         event.preventDefault();
-        actions.scroll(-2, setState);
+        setState(actions.scroll(-2));
     }
     const handleScrollDown = (event: React.MouseEvent) => {
         event.preventDefault();
-        actions.scroll(2, setState);
+        setState(actions.scroll(2));
     }
     
     const siths = appState.sithList.take(5);
