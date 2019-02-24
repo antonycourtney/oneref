@@ -11,7 +11,7 @@ import 'todomvc-app-css/index.css'
 
 const init: InitialStateEffect<TodoAppState> = (appState: TodoAppState) => {
     const serviceIter = onerefUtils.publisherAsyncIterable(todoServer.subscribe);
-    const stIter = onerefUtils.aiMap(serviceIter, (item: string) => actions.create(item));
+    const stIter = onerefUtils.aiMap(serviceIter, actions.create);
     return stIter;
 }
 

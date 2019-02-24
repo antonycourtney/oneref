@@ -17,13 +17,17 @@ export interface StateRefProps<S> {
 
 // ?? TODO: add optional cleanup handler:
 // X<S> | [ X<S>, () => void]
-export type InitialStateEffect<S> = (appState: S) => AsyncIterable<StateTransformer<S>>
+export type InitialStateEffect<S> = (appState: S, setState: StateSetter<S>) => void | AsyncIterable<StateTransformer<S>>
 export type StateChangeEffect<S> = (appState: S, setState: StateSetter<S>) => void
 
 async function stStreamReader<AS>(setState: StateSetter<AS>, stream: AsyncIterable<StateTransformer<AS>>): Promise<void> {
     for await (const st of stream) {
         setState(st);
     }
+}
+
+function isAsyncIterable<S>(val: void | AsyncIterable<StateTransformer<S>>): val is AsyncIterable<StateTransformer<S>> {
+    return (typeof val !== 'undefined');
 }
 
 /*
@@ -40,8 +44,11 @@ export const appContainer = <AS extends {}, P extends {},B = {}>(
 
     React.useEffect(() => {
         if (initEffect) {
-            stStreamReader(setState, initEffect(appState));
-        }
+            const v = initEffect(appState, setState);
+            if (isAsyncIterable(v)) {
+                stStreamReader(setState, v);
+            }
+        }   
     }, []);
 
     React.useEffect(() => {

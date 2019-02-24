@@ -9,6 +9,16 @@ function invokeLater(f: TimerHandler) {
   window.setTimeout(f, 0);
 }
 
+export const updateObiWan = (parsedLocation: any): StateTransformer<DashboardAppState> =>
+  state => {
+    const obiWanLocation = new DT.PlanetInfo(parsedLocation);
+    return state.set('obiWanLocation',obiWanLocation);
+  }
+
+
+/*
+ * most of the rest of this logic needs to go into a state change effect:
+ *
 export function updateObiWan(parsedLocation: any,updater: StateSetter<DashboardAppState>) {
   const obiWanLocation = new DT.PlanetInfo(parsedLocation);
   updater((prevState) => {
@@ -30,30 +40,35 @@ export function updateObiWan(parsedLocation: any,updater: StateSetter<DashboardA
     }
   });
 }
+*/
 
-export function requestSithInfo(append: boolean,sithId: number,updater: StateSetter<DashboardAppState>) {
+// Perform the actual fetch operation, await the results, and update state:
+async function fetchSithInfo(sithId: number, signal: AbortSignal, updater: StateSetter<DashboardAppState>): Promise<void> {
+  try {
+    const response = await fetch(sithUrl(sithId.toString()), {signal});
+    const parsedSithStatus = await response.json();
+    console.log('got fetch response: ', parsedSithStatus);
+    updater((prevState) => {
+      const st = prevState.updateSithStatus(parsedSithStatus);
+      // Need invokeLater since we're within updater
+      invokeLater(() => fillView(st,updater));
+      return st;
+    });
+  } catch (err) {
+      // request was aborted...ignore
+      console.log('caught abort fetching sith status for id ', sithId, ' (ignored)');
+  }
+}
 
+export function requestSithInfo(append: boolean, sithId: number, updater: StateSetter<DashboardAppState>): void {
   const controller = new AbortController();
   const signal = controller.signal;
 
-  const req = fetch(sithUrl(sithId.toString()), {signal})
-    .then(response => response.json())
-    .then(parsedSithStatus => {
-      console.log('got fetch response: ', parsedSithStatus);
-      updater((prevState) => {
-        const st = prevState.updateSithStatus(parsedSithStatus);
-        // Need invokeLater since we're within updater
-        invokeLater(() => fillView(st,updater));
-        return st;
-      });
-    })
-    .catch(err => {
-      // request was aborted...ignore
-      console.log('caught abort fetching sith status for id ', sithId, ' (ignored)');
-    })
   // fill in entry at pos indicating request for the given sith id,
   // and adding request to pending requestsById
-  updater((st) => st.addPendingRequest(append,sithId,controller));
+  updater((st) => st.addPendingRequest(append, sithId, controller));
+  // And spawn the async fetch request; note that we don't await the result
+  fetchSithInfo(sithId, signal, updater);
 }
 
 /*
