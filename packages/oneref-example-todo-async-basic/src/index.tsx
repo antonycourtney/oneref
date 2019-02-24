@@ -9,7 +9,7 @@ import * as actions from './actions';
 import 'todomvc-common/base.css'
 import 'todomvc-app-css/index.css'
 
-const initEffect: InitialStateEffect<TodoAppState> = (appState: TodoAppState) => {
+const init: InitialStateEffect<TodoAppState> = (appState: TodoAppState) => {
     const serviceIter = onerefUtils.publisherAsyncIterable(todoServer.subscribe);
     const stIter = onerefUtils.aiMap(serviceIter, (item: string) => actions.create(item));
     return stIter;
@@ -19,13 +19,13 @@ const initEffect: InitialStateEffect<TodoAppState> = (appState: TodoAppState) =>
  * Not needed for this app, but emits a few console logging messages
  * when called to show how this works.
  */
-const changeEffect: StateChangeEffect<TodoAppState> = (appState: TodoAppState, setState: StateSetter<TodoAppState>) => {
-    console.log('changeEffect: ', appState.toJS());
+const onStateChange: StateChangeEffect<TodoAppState> = (appState: TodoAppState, setState: StateSetter<TodoAppState>) => {
+    console.log('onStateChange: ', appState.toJS());
 }
 
 const initialAppState = new TodoAppState();
 
-const TodoApp = appContainer<TodoAppState, {}>(initialAppState, TodoListEditor, initEffect, changeEffect);
+const TodoApp = appContainer<TodoAppState, {}>(initialAppState, TodoListEditor, init, onStateChange);
 
 ReactDOM.render(<TodoApp />, document.getElementsByClassName('todoapp')[0]);
 

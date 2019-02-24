@@ -9,13 +9,9 @@ function invokeLater(f: TimerHandler) {
   window.setTimeout(f, 0);
 }
 
-export function updateObiWan(planetInfoJSON: any): StateTransformer<DashboardAppState> {
-  const planetInfoParsed = JSON.parse(planetInfoJSON);
-  const obiWanLocation = new DT.PlanetInfo(planetInfoParsed);
-  // TODO: Since it's a side effect, we should move
-  // clearPendingRequests out of here,
-  // along with the invokeLater...
-  return (prevState) => {
+export function updateObiWan(parsedLocation: any,updater: StateSetter<DashboardAppState>) {
+  const obiWanLocation = new DT.PlanetInfo(parsedLocation);
+  updater((prevState) => {
     const locState = prevState.set('obiWanLocation',obiWanLocation);
     if (locState.matchingSith()) {
       const { nextState, oldRequests } = locState.clearPendingRequests();
@@ -27,25 +23,22 @@ export function updateObiWan(planetInfoJSON: any): StateTransformer<DashboardApp
       invokeLater(() => fillView(locState,updater));
       return locState;
     }
-  };
+  });
 }
 
-export async function requestSithInfo(append: boolean,sithId: number): Promise<StateTransformer<DashboardAppState>> {
-  
+export function requestSithInfo(append: boolean,sithId: number,updater: StateSetter<DashboardAppState>) {
   const xhr = new XMLHttpRequest();
   xhr.onreadystatechange = () => {
     if (xhr.readyState===4 && xhr.status===200) {
-      const sithStatusParsed = JSON.parse(xhr.response);
+      const parsedSithStatus = JSON.parse(xhr.response);
       updater((prevState) => {
-        const st = prevState.updateSithStatus(sithStatusParsed);
+        const st = prevState.updateSithStatus(parsedSithStatus);
         // Need invokeLater since we're within updater
         invokeLater(() => fillView(st,updater));
         return st;
       });
     }
   };
-  const abortController = new AbortController();
-  
   xhr.open("GET",sithUrl(sithId.toString()),true);
   // fill in entry at pos indicating request for the given sith id,
   // and adding request to pending requestsById
