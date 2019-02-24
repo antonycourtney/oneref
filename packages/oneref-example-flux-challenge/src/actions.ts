@@ -15,7 +15,12 @@ export function updateObiWan(parsedLocation: any,updater: StateSetter<DashboardA
     const locState = prevState.set('obiWanLocation',obiWanLocation);
     if (locState.matchingSith()) {
       const { nextState, oldRequests } = locState.clearPendingRequests();
-      oldRequests.forEach((req) => (req !== null) ? req.abort() : null );
+      oldRequests.forEach((req) => {
+        if (req !== null) {
+          console.log('aborting request!'); 
+          req.abort(); 
+        }
+      });
       return nextState;
     } else {
       // may need to restart filling the view:
@@ -27,23 +32,28 @@ export function updateObiWan(parsedLocation: any,updater: StateSetter<DashboardA
 }
 
 export function requestSithInfo(append: boolean,sithId: number,updater: StateSetter<DashboardAppState>) {
-  const xhr = new XMLHttpRequest();
-  xhr.onreadystatechange = () => {
-    if (xhr.readyState===4 && xhr.status===200) {
-      const parsedSithStatus = JSON.parse(xhr.response);
+
+  const controller = new AbortController();
+  const signal = controller.signal;
+
+  const req = fetch(sithUrl(sithId.toString()), {signal})
+    .then(response => response.json())
+    .then(parsedSithStatus => {
+      console.log('got fetch response: ', parsedSithStatus);
       updater((prevState) => {
         const st = prevState.updateSithStatus(parsedSithStatus);
         // Need invokeLater since we're within updater
         invokeLater(() => fillView(st,updater));
         return st;
       });
-    }
-  };
-  xhr.open("GET",sithUrl(sithId.toString()),true);
+    })
+    .catch(err => {
+      // request was aborted...ignore
+      console.log('caught abort fetching sith status for id ', sithId, ' (ignored)');
+    })
   // fill in entry at pos indicating request for the given sith id,
   // and adding request to pending requestsById
-  updater((st) => st.addPendingRequest(append,sithId,xhr));
-  xhr.send();
+  updater((st) => st.addPendingRequest(append,sithId,controller));
 }
 
 /*

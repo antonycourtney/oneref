@@ -96,7 +96,7 @@ export default class DashboardAppState extends Immutable.Record(defaultDashboard
   /**
    * Update sithList to indicate pending request
    */
-  addPendingRequest(append: boolean,sithId: number,xhr: XMLHttpRequest) {
+  addPendingRequest(append: boolean,sithId: number, request: AbortController) {
     var pos;
     if (append) {
       pos = this.sithList.findLastIndex((r) => (r!==null) && (r.info!==null)) + 1;
@@ -108,7 +108,7 @@ export default class DashboardAppState extends Immutable.Record(defaultDashboard
         return this;
       }      
     }
-    const sithRow = new SithRow({id: sithId, request: xhr});
+    const sithRow = new SithRow({id: sithId, request});
     const updSithList = this.sithList.set(pos,sithRow);
     return this.set('sithList',updSithList);
   }
@@ -141,12 +141,12 @@ export default class DashboardAppState extends Immutable.Record(defaultDashboard
   /**
    * Clear any rows with pendings requests
    *
-   * @return {{nextState: DashboardAppState, oldRequests: Immutable.List<XMLHttpRequest> }}
+   * @return {{nextState: DashboardAppState, oldRequests: Immutable.List<AbortController> }}
    */
-  clearPendingRequests(): { nextState: DashboardAppState; oldRequests: Immutable.List<XMLHttpRequest>; } {
+  clearPendingRequests(): { nextState: DashboardAppState; oldRequests: Immutable.List<AbortController>; } {
     const isPending = (r: SithRow | null) => r!==null && r.request!==null;
     const pendingRows = this.sithList.filter(isPending) as Immutable.List<SithRow>;
-    const oldRequests = pendingRows.map((r) => r.request) as Immutable.List<XMLHttpRequest>;
+    const oldRequests = pendingRows.map((r) => r.request) as Immutable.List<AbortController>;
     const nextList = this.sithList.map((r) => isPending(r) ? null : r);
     const nextState = this.set('sithList',nextList);
     return { nextState, oldRequests };
