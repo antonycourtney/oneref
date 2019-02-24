@@ -524,6 +524,65 @@ export type STRunner<S> = (st: GeneralStateTransformer<S>) => void
 // type StateSetter<T> = React.Dispatch<React.SetStateAction<TodoAppState>>
 ```
 
+------
+2/23:
+
+More junk!
+Also tried:
+
+```typescript
+export type StateChangeEffect<S> = (states: AsyncIterable<S>) => AsyncIterable<StateTransformer<S>>
+
+/*
+ * A higher-order component that holds the single mutable ref cell for top-level app state
+ *
+ */
+export const appContainer = <AS extends {}, P extends {},B = {}>(
+    s0: AS, 
+    Comp: React.ComponentType<P & StateRefProps<AS>>,
+    initEffect?: InitialStateEffect<AS>,
+    onChangeEffect?: StateChangeEffect<AS>): React.FunctionComponent<P> => props => {
+
+    const [appState, setState] = React.useState(s0);
+
+    const [stateListener, setStateListener] = React.useState<utils.Listener<AS> | null>(null);
+
+    const [statesStream, setStatesStream] = React.useState(utils.publisherAsyncIterable((l : utils.Listener<AS>) => {
+        setStateListener(l);
+    }));
+
+    // Can't inline into useEffect because of async
+    async function stStreamReader(stream: AsyncIterable<StateTransformer<AS>>): Promise<void> {
+        for await (const st of stream) {
+            setState(st);
+        }
+    }
+
+    React.useEffect(() => {
+        if (initEffect) {
+            stStreamReader(initEffect(appState));
+        }
+        if (onChangeEffect) {
+            stStreamReader(onChangeEffect(statesStream));
+        }
+    }, []);
+
+    React.useEffect(() => {
+        if (stateListener) {
+            stateListener(appState);
+        }
+    }, [stateListener, appState]);
+
+
+    return (
+        <Comp {...props} appState={appState} setState={setState} />
+    );
+}
+```
+But it's actually an awkward PITA to try and work with AsyncIterable => AsyncIterable.
+
+Going to just try and add a state change effect that gets called repeatedly with
+the current state...
 
 
 

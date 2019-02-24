@@ -4,8 +4,8 @@
 namespace utils {
 
 // A generic routine to turn a publisher type interface into an async iterator:
-type Listener<T> = (v: T) => void;
-type Publisher<T> = (l: Listener<T>) => void;
+export type Listener<T> = (v: T) => void;
+export type Publisher<T> = (l: Listener<T>) => void;
 
 // Type of a resolve function for a promise:
 type Resolver<T> = (v?: T) => void;

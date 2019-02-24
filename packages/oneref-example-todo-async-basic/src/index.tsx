@@ -1,5 +1,5 @@
 import React from 'react';
-import {appContainer, StateSetter, InitialStateEffect, utils as onerefUtils} from 'oneref';
+import {appContainer, StateSetter, InitialStateEffect, StateChangeEffect, utils as onerefUtils} from 'oneref';
 import ReactDOM from 'react-dom';
 import TodoListEditor from './components/TodoListEditor';
 import TodoAppState from './todoAppState';
@@ -16,19 +16,16 @@ const initEffect: InitialStateEffect<TodoAppState> = (appState: TodoAppState) =>
 }
 
 /*
- * Not needed, but emits a few console logging messages
+ * Not needed for this app, but emits a few console logging messages
  * when called to show how this works.
  */
-const changeEffect = (appState: TodoAppState, setState: StateSetter<TodoAppState>) => {
+const changeEffect: StateChangeEffect<TodoAppState> = (appState: TodoAppState, setState: StateSetter<TodoAppState>) => {
     console.log('changeEffect: ', appState.toJS());
-    return () => {
-        console.log('changeEffect: unsubscribe!');
-    }
 }
 
 const initialAppState = new TodoAppState();
 
-const TodoApp = appContainer<TodoAppState, {}>(initialAppState, TodoListEditor, [initEffect]); // , [initEffect], [changeEffect]);
+const TodoApp = appContainer<TodoAppState, {}>(initialAppState, TodoListEditor, initEffect, changeEffect);
 
 ReactDOM.render(<TodoApp />, document.getElementsByClassName('todoapp')[0]);
 

@@ -3,60 +3,53 @@
  */
 
 import * as React from 'react';
+import { utils } from './utils';
 
 export type StateTransformer<T> = (s: T) => T
 export type StateSetter<T> = (st: StateTransformer<T>) => void
 // type StateSetter<T> = React.Dispatch<React.SetStateAction<TodoAppState>>
+
 
 export interface StateRefProps<S> {
     appState: S,
     setState: StateSetter<S>  
 }
 
-// ?? TODO: Do we want to add optional cleanup / unsubscribe for unmounting?
+// ?? TODO: add optional cleanup handler:
+// X<S> | [ X<S>, () => void]
 export type InitialStateEffect<S> = (appState: S) => AsyncIterable<StateTransformer<S>>
-export type StateEffect<S> = (appState: S, setState: StateSetter<S>) => (void | (() => void));
+export type StateChangeEffect<S> = (appState: S, setState: StateSetter<S>) => void
+
+async function stStreamReader<AS>(setState: StateSetter<AS>, stream: AsyncIterable<StateTransformer<AS>>): Promise<void> {
+    for await (const st of stream) {
+        setState(st);
+    }
+}
 
 /*
  * A higher-order component that holds the single mutable ref cell for top-level app state
  *
  */
-export const appContainer = <AS extends {}, P extends {}>(
+export const appContainer = <AS extends {}, P extends {},B = {}>(
     s0: AS, 
     Comp: React.ComponentType<P & StateRefProps<AS>>,
-    initialEffects: InitialStateEffect<AS>[] = [],
-    onChangeEffects: StateEffect<AS>[] = []): React.FunctionComponent<P> => props => {
+    initEffect?: InitialStateEffect<AS>,
+    onChangeEffect?: StateChangeEffect<AS>): React.FunctionComponent<P> => props => {
 
     const [appState, setState] = React.useState(s0);
 
-    async function stStreamReader(stream: AsyncIterable<StateTransformer<AS>>): Promise<void> {
-        for await (const st of stream) {
-            setState(st);
+    React.useEffect(() => {
+        if (initEffect) {
+            stStreamReader(setState, initEffect(appState));
         }
-    }
+    }, []);
 
-    const composeInitEffects = (effList: InitialStateEffect<AS>[]) => () => {
-        const stStreams = effList.map(eff => eff(appState));
-
-        for (let stStream of stStreams) {
-            stStreamReader(stStream);
+    React.useEffect(() => {
+        if (onChangeEffect) {
+            onChangeEffect(appState, setState);
         }
-    }
+    });
 
-    // TODO: probably inline into useEffect
-    const composedEffect = (effList: StateEffect<AS>[]) => () => {
-        const mbCleanups = effList.map(eff => eff(appState, setState));
-        return (() => {
-            for (var mbc of mbCleanups) {
-                if (typeof mbc === "function") {
-                    mbc();
-                }
-            }
-        });
-    }
-
-    React.useEffect(composeInitEffects(initialEffects), []);
-    React.useEffect(composedEffect(onChangeEffects));
     return (
         <Comp {...props} appState={appState} setState={setState} />
     );
