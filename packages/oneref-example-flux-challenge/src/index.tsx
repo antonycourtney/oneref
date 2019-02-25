@@ -5,7 +5,7 @@ import Dashboard from './components/Dashboard';
 import DashboardAppState from './dashboardAppState';
 import { PlanetInfo } from './dashboardTypes';
 import * as actions from './actions';
-
+import * as Immutable from 'immutable';
 
 type ObiWanListener = (event: any) => void;
 
@@ -27,10 +27,13 @@ const init: InitialStateEffect<DashboardAppState> = (appState: DashboardAppState
 
 const onStateChange: StateChangeEffect<DashboardAppState> = (appState: DashboardAppState, setState: StateSetter<DashboardAppState>) => {
     console.log('onStateChange: pending requests: ', appState.pendingRows().count(), ', old Requests: ', appState.oldRequests.count());
-    // eventually:
-    //     oldRequests.forEach((req) => req ? req.abort() : null);  // cancel old requests
-    // Then need to clear those requests with setState.
-    // Then need to fillView...
+
+    const oldRequests = appState.oldRequests;
+    if (oldRequests.count() > 0) {
+        oldRequests.forEach((req) => req ? req.abort() : null);  // cancel old requests
+        setState(st => st.set('oldRequests', Immutable.List()));
+    }
+    // fill in any needed parts of view:
     actions.fillView(appState, setState);
 }
 

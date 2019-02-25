@@ -5,10 +5,6 @@ import DashboardAppState from './dashboardAppState';
 
 const sithUrl = (id: string) => `http://localhost:3000/dark-jedis/${id}`
 
-function invokeLater(f: TimerHandler) {
-  window.setTimeout(f, 0);
-}
-
 export const updateObiWan = (parsedLocation: any): StateTransformer<DashboardAppState> =>
   state => {
     const obiWanLocation = new DT.PlanetInfo(parsedLocation);
@@ -18,33 +14,6 @@ export const updateObiWan = (parsedLocation: any): StateTransformer<DashboardApp
     return nextState;
   }
 
-
-/*
- * most of the rest of this logic needs to go into a state change effect:
- *
-export function updateObiWan(parsedLocation: any,updater: StateSetter<DashboardAppState>) {
-  const obiWanLocation = new DT.PlanetInfo(parsedLocation);
-  updater((prevState) => {
-    const locState = prevState.set('obiWanLocation',obiWanLocation);
-    if (locState.matchingSith()) {
-      const { nextState, oldRequests } = locState.clearPendingRequests();
-      oldRequests.forEach((req) => {
-        if (req !== null) {
-          console.log('aborting request!'); 
-          req.abort(); 
-        }
-      });
-      return nextState;
-    } else {
-      // may need to restart filling the view:
-      // Need invokeLater since we're within updater
-      invokeLater(() => fillView(locState,updater));
-      return locState;
-    }
-  });
-}
-*/
-
 // Perform the actual fetch operation, await the results, and update state:
 async function fetchSithInfo(sithId: number, signal: AbortSignal, updater: StateSetter<DashboardAppState>): Promise<void> {
   try {
@@ -53,8 +22,6 @@ async function fetchSithInfo(sithId: number, signal: AbortSignal, updater: State
     console.log('got fetch response: ', parsedSithStatus);
     updater((prevState) => {
       const st = prevState.updateSithStatus(parsedSithStatus);
-      // Need invokeLater since we're within updater
-      invokeLater(() => fillView(st,updater));
       return st;
     });
   } catch (err) {

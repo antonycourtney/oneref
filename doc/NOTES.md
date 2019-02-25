@@ -584,6 +584,40 @@ But it's actually an awkward PITA to try and work with AsyncIterable => AsyncIte
 Going to just try and add a state change effect that gets called repeatedly with
 the current state...
 
+------
+2/24:
+
+Kind of async actions:
+
+1. Something called (asynchronously) in an event callback that will make an immediate state change.
+2. Something called asynchronously in an event callback that kicks off another action that, when complete, will deliver a state mutation...
+
+or
+
+3. Kick off an async action. When that completes, update state and kick off another async action....
+
+For #3 or current approach is to store what's needed in the app state and spawn the follow-on action
+in the onChange effect.
+
+A particularly challenging example here is `requestSithInfo`:
+
+```typescript
+export function requestSithInfo(append: boolean, sithId: number, updater: StateSetter<DashboardAppState>): void {
+  const controller = new AbortController();
+  const signal = controller.signal;
+
+  // fill in entry at pos indicating request for the given sith id,
+  // and adding request to pending requestsById
+  updater((st) => st.addPendingRequest(append, sithId, controller));
+  // And spawn the async fetch request; note that we don't await the result
+  fetchSithInfo(sithId, signal, updater);
+}
+```
+
+There we need to pass down updated explicitly so that we can both update the state locally *and* pass it on
+to `fetchSithInfo`.
+
+
 
 
 
