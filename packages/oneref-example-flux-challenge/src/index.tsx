@@ -1,5 +1,5 @@
 import React from 'react';
-import {appContainer, StateSetter, StateChangeEffect, utils as onerefUtils, InitialStateEffect} from 'oneref';
+import {appContainer, StateRef, StateChangeEffect, utils as onerefUtils, InitialStateEffect, updateState} from 'oneref';
 import ReactDOM from 'react-dom';
 import Dashboard from './components/Dashboard';
 import DashboardAppState from './dashboardAppState';
@@ -17,24 +17,24 @@ const obiWanSubscribe = (listener: ObiWanListener) => {
     }
 } 
 
-const init: InitialStateEffect<DashboardAppState> = (appState: DashboardAppState, setState: StateSetter<DashboardAppState>) => {
+const init: InitialStateEffect<DashboardAppState> = (appState: DashboardAppState, stateRef: StateRef<DashboardAppState>) => {
     const serviceIter = onerefUtils.publisherAsyncIterable(obiWanSubscribe);
     const stIter = onerefUtils.aiMap(serviceIter, actions.updateObiWan);
     // start things off
-    actions.requestSithInfo(true,3616, setState);
+    actions.requestSithInfo(true,3616, stateRef);
     return stIter;
 }
 
-const onStateChange: StateChangeEffect<DashboardAppState> = (appState: DashboardAppState, setState: StateSetter<DashboardAppState>) => {
-    console.log('onStateChange: pending requests: ', appState.pendingRows().count(), ', old Requests: ', appState.oldRequests.count());
+const onStateChange: StateChangeEffect<DashboardAppState> = (appState: DashboardAppState, stateRef: StateRef<DashboardAppState>) => {
+    console.log('onStateChange: pending requests: ', appState.pendingRows().count(), ', oldRequests: ', appState.oldRequests.count());
 
     const oldRequests = appState.oldRequests;
     if (oldRequests.count() > 0) {
         oldRequests.forEach((req) => req ? req.abort() : null);  // cancel old requests
-        setState(st => st.set('oldRequests', Immutable.List()));
+        updateState(stateRef, st => st.set('oldRequests', Immutable.List()));
     }
     // fill in any needed parts of view:
-    actions.fillView(appState, setState);
+    actions.fillView(appState, stateRef);
 }
 
 const initialAppState = new DashboardAppState;

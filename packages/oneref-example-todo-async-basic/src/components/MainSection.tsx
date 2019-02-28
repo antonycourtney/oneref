@@ -12,16 +12,16 @@ import TodoItem from '../todoItem';
 import TodoItemEditor from './TodoItemEditor';
 import TodoAppState from '../todoAppState';
 import * as actions from '../actions';
-import {StateSetter} from 'oneref';
+import {StateRef, updateState} from 'oneref';
 import {Seq} from 'immutable';
 
 interface MainSectionProps {
   todos: Seq.Set<TodoItem>
   areAllComplete: boolean
-  setState: StateSetter<TodoAppState>
+  stateRef: StateRef<TodoAppState>
 }
 
-const MainSection = ({todos, areAllComplete, setState}: MainSectionProps) => {
+const MainSection = ({todos, areAllComplete, stateRef}: MainSectionProps) => {
   // This section should be hidden by default
   // and shown when there are todos.
   if (todos.count() < 1) {
@@ -33,7 +33,7 @@ const MainSection = ({todos, areAllComplete, setState}: MainSectionProps) => {
   let itemEditors = [];
 
   for (var key in todosArr) {
-    itemEditors.push(<TodoItemEditor key={key} todo={todosArr[key]} setState={setState} />);
+    itemEditors.push(<TodoItemEditor key={key} todo={todosArr[key]} stateRef={stateRef} />);
   }
 
   return (
@@ -42,7 +42,7 @@ const MainSection = ({todos, areAllComplete, setState}: MainSectionProps) => {
         id="toggle-all"
         className="toggle-all"
         type="checkbox"
-        onChange={() => setState(actions.toggleCompleteAll)}
+        onChange={() => updateState(stateRef, actions.toggleCompleteAll)}
         checked={areAllComplete}
       />
       <label htmlFor="toggle-all">Mark all as complete</label>

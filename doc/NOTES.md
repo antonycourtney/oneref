@@ -617,6 +617,20 @@ export function requestSithInfo(append: boolean, sithId: number, updater: StateS
 There we need to pass down updated explicitly so that we can both update the state locally *and* pass it on
 to `fetchSithInfo`.
 
+-------
+A few thoughts:
+
+1. If we think about "imperative shell, functional core" it seems there really should be a way to push async
+actions and state updates to the edges, without the need to pass around setState() everywhere.
+
+2. We should really try an intermediate async example between todo-async-basic and flux-challenge.
+In particular: We should investigate a version of TodoMVC with a hypothetical cloud storage / sync service
+with an async API.  This will likely preclude just having actions return state transformers, since we
+would need to have a way to inject state updates when the async actions complete.
+
+------
+Crazy ass idea:  What if onChangeEffect event handler resolved a promise with the new state,
+so that async actions of type number 3 could do an await on an async updateState operation?
 
 
 

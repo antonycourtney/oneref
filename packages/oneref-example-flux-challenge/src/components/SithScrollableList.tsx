@@ -1,17 +1,17 @@
 import React from 'react';
 import { PlanetInfo, SithRow } from '../dashboardTypes';
 import DashboardAppState from '../dashboardAppState';
-import { StateSetter } from 'oneref';
+import { StateRef, updateState } from 'oneref';
 import SithRowViewer from './SithRowViewer';
 import * as actions from '../actions';
 import classNames from 'classnames';
 
 interface SithScrollableListProps {
     appState: DashboardAppState;
-    setState: StateSetter<DashboardAppState>;
+    stateRef: StateRef<DashboardAppState>;
 }
 
-const SithScrollableList = ({appState, setState}: SithScrollableListProps) => {
+const SithScrollableList = ({appState, stateRef}: SithScrollableListProps) => {
     /*
      * Note: It's tempting to just directly cancel the requests that are out
      * of view in appState. But remember that appState is likely stale
@@ -19,11 +19,11 @@ const SithScrollableList = ({appState, setState}: SithScrollableListProps) => {
      */
     const handleScrollUp = (event: React.MouseEvent) => {
         event.preventDefault();
-        setState(actions.scroll(-2));
+        updateState(stateRef, actions.scroll(-2));
     }
     const handleScrollDown = (event: React.MouseEvent) => {
         event.preventDefault();
-        setState(actions.scroll(2));
+        updateState(stateRef, actions.scroll(2));
     }
     
     const siths = appState.sithList.take(5);
