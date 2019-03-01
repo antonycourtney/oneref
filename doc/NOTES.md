@@ -591,12 +591,9 @@ Kind of async actions:
 
 1. Something called (asynchronously) in an event callback that will make an immediate state change.
 2. Something called asynchronously in an event callback that kicks off another action that, when complete, will deliver a state mutation...
-
-or
-
 3. Kick off an async action. When that completes, update state and kick off another async action....
 
-For #3 or current approach is to store what's needed in the app state and spawn the follow-on action
+For #3 our current approach is to store what's needed in the app state and spawn the follow-on action
 in the onChange effect.
 
 A particularly challenging example here is `requestSithInfo`:
@@ -629,10 +626,7 @@ with an async API.  This will likely preclude just having actions return state t
 would need to have a way to inject state updates when the async actions complete.
 
 ------
+2/26:
+
 Crazy ass idea:  What if onChangeEffect event handler resolved a promise with the new state,
 so that async actions of type number 3 could do an await on an async updateState operation?
-
-
-
-
-

@@ -12,19 +12,19 @@ import TodoTextInput from './TodoTextInput';
 import TodoItem from '../todoItem';
 import TodoAppState from '../todoAppState';
 import * as actions from '../actions';
-import {StateSetter} from 'oneref';
+import {StateRef, updateState} from 'oneref';
 import classNames from 'classnames';
 
 interface TodoItemEditorProps {
   todo: TodoItem
-  setState: StateSetter<TodoAppState>
+  stateRef: StateRef<TodoAppState>
 }
 
-const TodoItemEditor = ({todo, setState}: TodoItemEditorProps) => {
+const TodoItemEditor = ({todo, stateRef}: TodoItemEditorProps) => {
   const [isEditing, setIsEditing] = React.useState(false);
 
   const onSave = (text: string): void => {
-    setState(actions.updateText(todo, text));
+    updateState(stateRef, actions.updateText(todo, text));
     setIsEditing(false);
   }
 
@@ -55,12 +55,12 @@ const TodoItemEditor = ({todo, setState}: TodoItemEditorProps) => {
           className='toggle'
           type="checkbox"
           checked={todo.complete}
-          onChange={() => setState(actions.toggleComplete(todo))}
+          onChange={() => updateState(stateRef, actions.toggleComplete(todo))}
         />
         <label onDoubleClick={() => setIsEditing(true)}>
           {todo.text}
         </label>
-        <button className="destroy" onClick={() => setState(actions.destroy(todo.id))} />
+        <button className="destroy" onClick={() => updateState(stateRef, actions.destroy(todo.id))} />
       </div>
       {input}
     </li>

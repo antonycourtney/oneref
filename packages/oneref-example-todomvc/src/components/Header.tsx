@@ -11,17 +11,17 @@ import React from 'react';
 import TodoAppState from '../todoAppState';
 import TodoTextInput from './TodoTextInput';
 import * as actions from '../actions';
-import {StateTransformer, StateSetter} from 'oneref';
+import {StateTransformer, StateRef, updateState} from 'oneref';
 
 interface HeaderProps {
-  setState: StateSetter<TodoAppState>
+  stateRef: StateRef<TodoAppState>
 }
 
-const Header = ({ setState }: HeaderProps) => {
+const Header = ({ stateRef }: HeaderProps) => {
 
   const onSave = (text: string) => {
     if (text.trim()){
-      setState(actions.create(text));
+      updateState(stateRef, actions.create(text));
     }
   }
 
