@@ -9,14 +9,14 @@ type MultiTodoListEditorProps = {} & oneref.StateRefProps<MultiTodoAppState>;
 const workFocus = oneref.focus<MultiTodoAppState, TodoAppState>(as => as.work, (as, w) => as.set('work', w));
 const personalFocus = oneref.focus<MultiTodoAppState, TodoAppState>(as => as.personal, (as, p) => as.set('personal', p));
 
-const MultiTodoListEditor: React.FunctionComponent<MultiTodoListEditorProps> = ({appState, setState}: MultiTodoListEditorProps) => {
-    const [workTodos, updateWorkTodos] = workFocus(appState, setState);
-    const [personalTodos, updatePersonalTodos] = personalFocus(appState, setState);
+const MultiTodoListEditor: React.FunctionComponent<MultiTodoListEditorProps> = ({appState, stateRef}: MultiTodoListEditorProps) => {
+    const [workTodos, updateWorkTodos] = workFocus(appState, stateRef);
+    const [personalTodos, updatePersonalTodos] = personalFocus(appState, stateRef);
     
     return (
       <>
-        <TodoListEditor label='work' appState={workTodos} setState={updateWorkTodos} />
-        <TodoListEditor label='personal' appState={personalTodos} setState={updatePersonalTodos} />
+        <TodoListEditor label='work' appState={workTodos} stateRef={updateWorkTodos} />
+        <TodoListEditor label='personal' appState={personalTodos} stateRef={updatePersonalTodos} />
       </>  
     )
 }

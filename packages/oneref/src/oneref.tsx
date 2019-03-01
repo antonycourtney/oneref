@@ -109,11 +109,25 @@ export const appContainer = <AS extends {}, P extends {},B = {}>(
  */
 type ProjectFunc<OT, IT> = (o: OT) => IT
 type InjectFunc<OT, IT> = (o: OT, i: IT) => OT  // i.e. functional update
-type FocusFunc<OT, IT> = (o: OT, updateOuter: StateUpdater<OT>) => [IT, StateUpdater<IT>]
+type FocusFunc<OT, IT> = (o: OT, outerRef: StateRef<OT>) => [IT, StateRef<IT>]
 export const focus =
-    <OT extends {},IT extends {}>(view: ProjectFunc<OT,IT>, inject: InjectFunc<OT,IT>): FocusFunc<OT, IT> => (o, updateOuter) => {
-        const updInner = (itf: StateTransformer<IT>) => updateOuter(os => inject(os, itf(view(os))));
-        return ([view(o), updInner]);
+    <OT extends {},IT extends {}>(view: ProjectFunc<OT,IT>, inject: InjectFunc<OT,IT>): FocusFunc<OT, IT> => (o, outerRef) => {
+        /*
+         * This is a little sleazy -- we happen to know that updateState and updateStateAsync are the only
+         * functions that use stateRefs, and that they are purely additive with resolvers.
+         * So we pass [] in as resolvers, and just map over any resolvers that get added to lift
+         * them from IT to OT.
+         * You are not expected to understand this; trust the types, Luke.
+         */
+        const innerStateRef: StateRef<IT> = (itf: StateTransformer<StateRep<IT>>) => {
+            outerRef(({appState, resolvers}: StateRep<OT>) => {
+                const innerRep: StateRep<IT> = { appState: view(appState), resolvers: [] };
+                const auxInnerRep = itf(innerRep);
+                const auxOuterResolvers = auxInnerRep.resolvers.map(ir => (o: OT) => ir(view(o))); 
+                return { appState: inject(appState, auxInnerRep.appState), resolvers: resolvers.concat(auxOuterResolvers)}
+            });
+        }
+        return ([view(o), innerStateRef]);
     }
 
 export {utils as utils} from './utils';

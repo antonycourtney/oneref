@@ -630,3 +630,23 @@ would need to have a way to inject state updates when the async actions complete
 
 Crazy ass idea:  What if onChangeEffect event handler resolved a promise with the new state,
 so that async actions of type number 3 could do an await on an async updateState operation?
+
+2/28:
+
+We did it.
+Now we have two basic operations exported from oneref:
+
+```typescript
+
+export function updateState<T>(ref: StateRef<T>, tf: StateTransformer<T>)
+
+export async function updateStateAsync<T, A>(ref: StateRef<T>, tf: StateTransformerAux<T, A>): Promise<[T, A]>
+
+```
+
+Naming thought: Perhaps we should change `upstateStateAsync` to `updateStateAwaitable`. Both functions
+update the state asynchrononously; the difference with the latter is that it returns a Promise we can use
+with `await`.
+
+We should probably look carefully at redux-thunk and redux-saga, and attempt some of the tutorial examples
+using oneref...

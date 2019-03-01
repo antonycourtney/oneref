@@ -26,7 +26,7 @@ type TodoListEditorProps = {
   label: string
 } & oneref.StateRefProps<TodoAppState>;
 
-const TodoListEditor: React.FunctionComponent<TodoListEditorProps> = ({label, appState, setState}: TodoListEditorProps) => {
+const TodoListEditor: React.FunctionComponent<TodoListEditorProps> = ({label, appState, stateRef}: TodoListEditorProps) => {
   const [nowShowing, setNowShowing] = React.useState(ALL_TODOS);
 
   const allTodos = appState.getAll();
@@ -35,18 +35,18 @@ const TodoListEditor: React.FunctionComponent<TodoListEditorProps> = ({label, ap
 
   return (
     <>
-      <Header label={label} setState={setState} />
+      <Header label={label} stateRef={stateRef} />
       <MainSection
           todos={filteredTodos}
           areAllComplete={appState.areAllComplete()}
-          setState={setState}
+          stateRef={stateRef}
         />
 
       <Footer 
         allTodos={allTodos} 
         nowShowing={nowShowing}
         setNowShowing={setNowShowing} 
-        setState={setState} />
+        stateRef={stateRef} />
     </>
   )
 }
