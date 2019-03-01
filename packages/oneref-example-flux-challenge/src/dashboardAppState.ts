@@ -31,12 +31,12 @@ export default class DashboardAppState extends Immutable.Record(defaultDashboard
   /**
    * handle a response to a pending request update to sith status
    *
-   * @return {DashboardAppState} -- app state with the status of the sith with 
+   * returns: updated state paired with array of AbortController for any outdated requests
    */
-  updateSithStatus(pstat: any): DashboardAppState {
+  updateSithStatus(pstat: any): [DashboardAppState, AbortController[] ] {
     const idx = this.sithList.findIndex((entry) => (entry !== null) && entry.id === pstat.id);
     if (idx === -1)
-      return this; // id has been scrolled out of view
+      return [this, []]; // id has been scrolled out of view
     const sithInfo = new SithInfo({
       id: pstat.id, name: pstat.name, homeworld: new PlanetInfo(pstat.homeworld),
       masterId: ((pstat.master!==null) && (pstat.master.id!==null)) ? pstat.master.id : INVALID_ID,
@@ -44,7 +44,8 @@ export default class DashboardAppState extends Immutable.Record(defaultDashboard
     });
     const updRow = (this.sithList.get(idx) as SithRow).set('info', sithInfo).set('request', null);
     const updList = this.sithList.set(idx, updRow);
-    return this.set('sithList', updList);
+    const nextSt = this.set('sithList', updList);
+    return nextSt.checkMatchingSith();
   }
 
   lastKnownSith(): RowInfo | null {
@@ -161,19 +162,34 @@ export default class DashboardAppState extends Immutable.Record(defaultDashboard
    * > again and there is no red-highlighted Dark Jedi anymore.
    * 
    */
-  clearPendingRequests(): this {
+  clearPendingRequests(): [this, AbortController[]] {
     const pendingRows = this.pendingRows();
     const oldRequests = pendingRows.map((r) => r.request) as Immutable.List<AbortController>;
     const nextList = this.sithList.map((r) => isPending(r) ? null : r);
-    const nextState = this.set('sithList',nextList).set('oldRequests', this.oldRequests.concat(oldRequests));
-    return nextState;
+    const nextState = this.set('sithList',nextList);
+    if (oldRequests.count() > 0) {
+      console.log('clearPendingRequests: ', nextState.toJS(), oldRequests.toJS());
+    }
+    return [nextState, oldRequests.toArray()];
   }
+
+  /**
+   * Check for if any sith matches Obi-Wan's location.
+   * If so, clear any pending and requests and return the list of requests to cancel
+   * 
+   */
+  checkMatchingSith(): [this, AbortController[]] {
+    const [nextState, oldRequests] = this.matchingSith() ? this.clearPendingRequests() : [this, []];
+    return [nextState, oldRequests];
+  }
+
 
   /** 
    * adjust scroll position by specified amount,
-   * moving any outdated requests to oldRequests
+   * 
+   * returns: updated state and any outdated requests
    */
-  scrollAdjust(delta: number): this {
+  scrollAdjust(delta: number): [this, AbortController[]] {
     const offset = -1 * delta;
     var updList, droppedRows;
     if (offset >= 0) {
@@ -188,8 +204,8 @@ export default class DashboardAppState extends Immutable.Record(defaultDashboard
       // and pad out with nulls:
       updList = headElems.concat(Immutable.Repeat(null,delta).toList());
     }
-    const oldRequests = droppedRows.filter((r) => r!==null && r.request!==null).map((r) => r!.request);
-    const nextState = this.set('sithList',updList).set('oldRequests', this.oldRequests.concat(oldRequests));
-    return nextState;
+    const oldRequests = droppedRows.filter((r) => r!==null && r.request!==null).map((r) => r!.request!).toArray();
+    const nextState = this.set('sithList',updList);
+    return [nextState, oldRequests];
   }
 };

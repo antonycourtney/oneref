@@ -19,26 +19,14 @@ const obiWanSubscribe = (listener: ObiWanListener) => {
 
 const init: InitialStateEffect<DashboardAppState> = (appState: DashboardAppState, stateRef: StateRef<DashboardAppState>) => {
     const serviceIter = onerefUtils.publisherAsyncIterable(obiWanSubscribe);
-    const stIter = onerefUtils.aiMap(serviceIter, actions.updateObiWan);
+    actions.processObiWanUpdates(serviceIter, stateRef);
+
     // start things off
     actions.requestSithInfo(true,3616, stateRef);
-    return stIter;
-}
-
-const onStateChange: StateChangeEffect<DashboardAppState> = (appState: DashboardAppState, stateRef: StateRef<DashboardAppState>) => {
-    console.log('onStateChange: pending requests: ', appState.pendingRows().count(), ', oldRequests: ', appState.oldRequests.count());
-
-    const oldRequests = appState.oldRequests;
-    if (oldRequests.count() > 0) {
-        oldRequests.forEach((req) => req ? req.abort() : null);  // cancel old requests
-        updateState(stateRef, st => st.set('oldRequests', Immutable.List()));
-    }
-    // fill in any needed parts of view:
-    actions.fillView(appState, stateRef);
 }
 
 const initialAppState = new DashboardAppState;
 
-const DashboardApp = appContainer<DashboardAppState, {}>(initialAppState, Dashboard, init, onStateChange);
+const DashboardApp = appContainer<DashboardAppState, {}>(initialAppState, Dashboard, init);
 
 ReactDOM.render(<DashboardApp />,   document.getElementById('app'));

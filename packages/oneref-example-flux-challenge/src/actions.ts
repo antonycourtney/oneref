@@ -1,29 +1,43 @@
 import * as Immutable from 'immutable';
 import * as DT from './dashboardTypes';
-import { StateRef, StateTransformer, updateState } from 'oneref';
+import { StateRef, StateTransformer, updateState, updateStateAsync } from 'oneref';
 import DashboardAppState from './dashboardAppState';
 
 const sithUrl = (id: string) => `http://localhost:3000/dark-jedis/${id}`
 
-export const updateObiWan = (parsedLocation: any): StateTransformer<DashboardAppState> =>
-  state => {
+const updateObiWan = async (parsedLocation: any, stateRef: StateRef<DashboardAppState>) => {
+  const [nextSt, oldRequests] = await updateStateAsync(stateRef, state => {
     const obiWanLocation = new DT.PlanetInfo(parsedLocation);
     const locState = state.set('obiWanLocation',obiWanLocation);
-    // Requirement: clear all pending if matching sith:
-    const nextState = locState.matchingSith() ? locState.clearPendingRequests() : locState;
-    return nextState;
+    return locState.checkMatchingSith();
+  });
+  cancelOldRequests(oldRequests);
+  if (!nextSt.matchingSith()) {
+    fillView(nextSt, stateRef);
   }
+}
+
+export const processObiWanUpdates = async (updateStream: AsyncIterable<any>, stateRef: StateRef<DashboardAppState>): Promise<void> => {
+  for await (const locJSON of updateStream) {
+    updateObiWan(locJSON, stateRef);
+  }  
+}  
+
+const cancelOldRequests = (oldRequests: AbortController[]) => {
+  if (oldRequests.length > 0) {
+    console.log('cancelling ', oldRequests.length, ' pending requests');
+    oldRequests.forEach((req) => req.abort());
+  }
+}
 
 // Perform the actual fetch operation, await the results, and update state:
 async function fetchSithInfo(sithId: number, signal: AbortSignal, stateRef: StateRef<DashboardAppState>): Promise<void> {
   try {
     const response = await fetch(sithUrl(sithId.toString()), {signal});
     const parsedSithStatus = await response.json();
-    console.log('got fetch response: ', parsedSithStatus);
-    updateState(stateRef, (prevState) => {
-      const st = prevState.updateSithStatus(parsedSithStatus);
-      return st;
-    });
+    const [nextSt, oldRequests] = await updateStateAsync(stateRef, (prevState) => prevState.updateSithStatus(parsedSithStatus));
+    cancelOldRequests(oldRequests);
+    fillView(nextSt, stateRef);
   } catch (err) {
       // request was aborted...ignore
       console.log('caught abort fetching sith status for id ', sithId, ' (ignored)');
@@ -43,18 +57,20 @@ export function requestSithInfo(append: boolean, sithId: number, stateRef: State
 
 /*
  * fill view by generating more requests if necessary
+ *
  */
 export function fillView(st: DashboardAppState, stateRef: StateRef<DashboardAppState>) {
   const lastSith = st.lastKnownSith();
   if (st.needsApprentice(lastSith)) {
     requestSithInfo(true,lastSith!.info.apprenticeId, stateRef);
-  } else {
-    const firstSith = st.firstKnownSith();
-    if (st.needsMaster(firstSith)) {
-       requestSithInfo(false,firstSith!.info.masterId, stateRef);
-     }    
+  }
+  const firstSith = st.firstKnownSith();
+  if (st.needsMaster(firstSith)) {
+    requestSithInfo(false,firstSith!.info.masterId, stateRef);
   }
 }
 
-export const scroll = (scrollAmount: number): StateTransformer<DashboardAppState> =>
-  st => st.scrollAdjust(scrollAmount);
+export const scroll = async (scrollAmount: number, stateRef: StateRef<DashboardAppState>): Promise<void> => {
+  const [nextSt, oldRequests] = await updateStateAsync(stateRef, st => st.scrollAdjust(scrollAmount));
+  fillView(nextSt, stateRef);
+}

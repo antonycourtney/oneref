@@ -19,11 +19,11 @@ const SithScrollableList = ({appState, stateRef}: SithScrollableListProps) => {
      */
     const handleScrollUp = (event: React.MouseEvent) => {
         event.preventDefault();
-        updateState(stateRef, actions.scroll(-2));
+        actions.scroll(-2, stateRef);
     }
     const handleScrollDown = (event: React.MouseEvent) => {
         event.preventDefault();
-        updateState(stateRef, actions.scroll(2));
+        actions.scroll(2, stateRef);
     }
     
     const siths = appState.sithList.take(5);
