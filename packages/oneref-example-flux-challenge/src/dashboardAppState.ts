@@ -14,14 +14,12 @@ interface RowInfo {
  */
 interface DashboardAppStateProps {
   obiWanLocation: PlanetInfo | null,      // null or PlanetInfo()
-  sithList: Immutable.List<SithRow | null>, // fixed size (VIEWPORT_SIZE)
-  oldRequests: Immutable.List<AbortController | null>
+  sithList: Immutable.List<SithRow | null> // fixed size (VIEWPORT_SIZE)
 }
 
 const defaultDashboardAppStateProps : DashboardAppStateProps = {
   obiWanLocation: null,      
-  sithList: Immutable.Repeat(null,VIEWPORT_SIZE).toList(),
-  oldRequests: Immutable.List()
+  sithList: Immutable.Repeat(null,VIEWPORT_SIZE).toList()
 }
 
 const isPending = (r: SithRow | null) => r!==null && r.request!==null;
