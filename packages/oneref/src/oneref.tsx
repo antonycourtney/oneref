@@ -41,7 +41,7 @@ export async function updateStateAsync<T, A>(ref: StateRef<T>, tf: StateTransfor
     return new Promise((resolve, reject) => {
         ref(sr => {
             const [appState, aux] = tf(sr.appState);
-            const auxResolver = (s: T) => resolve([s, aux]);
+            const auxResolver = (s: T) => resolve([appState, aux]);
             const resolvers = sr.resolvers;
             resolvers.push(auxResolver);
             return { appState, resolvers };
