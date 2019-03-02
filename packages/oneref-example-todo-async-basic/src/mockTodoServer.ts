@@ -2,6 +2,9 @@
  * A simulated service providing Todo list entries
  *
  */
+import {utils as onerefUtils} from 'oneref';
+
+const { delay } = onerefUtils;
 
 type TodoListener = (entry: string) => void;
 
@@ -30,14 +33,7 @@ export const subscribe = (listener: TodoListener) => {
     setTimeout(() => postEntry(subState, listener), INTERVAL);
 }
 
-
 // Let's play with async iterators:
-async function delay(waitTime: number): Promise<void> {
-    const p = new Promise<void>((resolve, reject) => {
-        setTimeout(resolve, waitTime);
-    });
-    return p;
-}
 
 export async function tryDelay(): Promise<void> {
     console.log('in tryDelay');

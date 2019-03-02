@@ -43,6 +43,14 @@ export async function* aiMap<A, B>(src: AsyncIterable<A>, f: (a: A) => B): Async
     }
 }
 
+export async function delay(waitTime: number): Promise<void> {
+    const p = new Promise<void>((resolve, reject) => {
+        setTimeout(resolve, waitTime);
+    });
+    return p;
+}
+
+
 } // namespace
 
 export { utils };

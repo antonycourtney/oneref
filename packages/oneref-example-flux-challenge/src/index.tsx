@@ -27,6 +27,6 @@ const init: InitialStateEffect<DashboardAppState> = (appState: DashboardAppState
 
 const initialAppState = new DashboardAppState;
 
-const DashboardApp = appContainer<DashboardAppState, {}>(initialAppState, Dashboard, init);
+const DashboardApp = appContainer<DashboardAppState>(initialAppState, Dashboard, init);
 
 ReactDOM.render(<DashboardApp />,   document.getElementById('app'));

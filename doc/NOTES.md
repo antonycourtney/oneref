@@ -650,3 +650,14 @@ with `await`.
 
 We should probably look carefully at redux-thunk and redux-saga, and attempt some of the tutorial examples
 using oneref...
+
+....indeed, here is a treasure trove of how to do async with Redux under various approaches, including
+redux-thunk and redux-saga:
+
+https://stackoverflow.com/questions/35411423/how-to-dispatch-a-redux-action-with-a-timeout/35415559#35415559
+
+and here is a repository showing the various approaches:
+
+https://github.com/tylerlong/hello-async
+
+-----

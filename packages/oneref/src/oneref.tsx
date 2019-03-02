@@ -25,7 +25,7 @@ interface StateRep<T> {
     resolvers: Resolver<T>[];
 } 
 
-// TODO: make this an opaque type
+// Ideally this should be an opaque type outside this module
 export type StateRef<T> = StateUpdater<StateRep<T>>
 
 export interface StateRefProps<T> {
@@ -68,7 +68,7 @@ function isAsyncIterable<S>(val: void | AsyncIterable<StateTransformer<S>>): val
  * A higher-order component that holds the single mutable ref cell for top-level app state
  *
  */
-export const appContainer = <AS extends {}, P extends {},B = {}>(
+export const appContainer = <AS extends {}, P extends {} = {},B = {}>(
     as0: AS, 
     Comp: React.ComponentType<P & StateRefProps<AS>>,
     initEffect?: InitialStateEffect<AS>,
