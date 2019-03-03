@@ -10,13 +10,14 @@
     "url": "https://github.com/antonycourtney/oneref.git"
   },
   "peerDependencies": {},
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
+    "prettier": "1.16.4",
     "rimraf": "^2.6.3"
   },
   "scripts": {
     "clean": "rimraf dist",
-    "build": "tsc"
+    "build": "tsc",
+    "prettier": "prettier --write src/*.ts*"
   }
 }
