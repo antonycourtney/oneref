@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {appContainer, StateRef, StateChangeEffect, utils as onerefUtils, InitialStateEffect, updateState} from 'oneref';
+import {appContainer, StateRef, StateChangeEffect, utils as onerefUtils, InitialStateEffect, update} from 'oneref';
 
 import './index.css';
 import App from './App';

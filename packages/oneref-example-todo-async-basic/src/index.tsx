@@ -28,17 +28,3 @@ const initialAppState = new TodoAppState();
 const TodoApp = appContainer<TodoAppState, {}>(initialAppState, TodoListEditor, init, onStateChange);
 
 ReactDOM.render(<TodoApp />, document.getElementsByClassName('todoapp')[0]);
-
-// todoServer.tryDelay();
-// todoServer.genConsumer();
-
-async function testReader(): Promise<void> {
-    console.log('testReader: enter');
-    const iter = onerefUtils.publisherAsyncIterable(todoServer.subscribe);
-    for await (const s of iter) {
-        console.log('testReader: ', s);
-    }
-    console.log('testReader: exit');
-}
-
-// testReader();

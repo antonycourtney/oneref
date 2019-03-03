@@ -1,5 +1,5 @@
 import React from 'react';
-import {appContainer, StateRef, StateChangeEffect, utils as onerefUtils, InitialStateEffect, updateState} from 'oneref';
+import {appContainer, StateRef, StateChangeEffect, utils as onerefUtils, InitialStateEffect, update} from 'oneref';
 import ReactDOM from 'react-dom';
 import Dashboard from './components/Dashboard';
 import DashboardAppState from './dashboardAppState';

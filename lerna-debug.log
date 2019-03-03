@@ -1,19 +1,68 @@
-0 silly input []
-1 silly flags { _: [ 'bootstrap' ],
+0 silly input [ 'build' ]
+1 silly flags { _: [ 'run' ],
 1 silly flags   'reject-cycles': false,
 1 silly flags   rejectCycles: false,
+1 silly flags   script: 'build',
 1 silly flags   args: [] }
 2 verbose rootPath /Users/antony/home/src/js/oneref
 3 info version 2.11.0
 4 silly existsSync /Users/antony/home/src/js/oneref/VERSION
-5 error EPACKAGES Errored while collecting packages and package graph
-6 error JSONError: Unexpected token } in JSON at position 510 while parsing near '...ommon": "^1.0.5",  },  "scripts": {  ...' in packages/oneref-example-todomvc/package.json
-6 error     at module.exports (/usr/local/lib/node_modules/lerna/node_modules/parse-json/index.js:26:19)
-6 error     at parse (/usr/local/lib/node_modules/lerna/node_modules/load-json-file/index.js:8:29)
-6 error     at Function.module.exports.sync.fp [as sync] (/usr/local/lib/node_modules/lerna/node_modules/load-json-file/index.js:11:29)
-6 error     at Function.module.exports.sync (/usr/local/lib/node_modules/lerna/node_modules/read-pkg/index.js:40:25)
-6 error     at /usr/local/lib/node_modules/lerna/lib/PackageUtilities.js:138:47
-6 error     at Array.forEach (<anonymous>)
-6 error     at /usr/local/lib/node_modules/lerna/lib/PackageUtilities.js:132:86
-6 error     at Array.forEach (<anonymous>)
-6 error     at Function.getPackages (/usr/local/lib/node_modules/lerna/lib/PackageUtilities.js:131:22)
+5 silly initialize attempt
+6 silly initialize success
+7 silly execute attempt
+8 silly runScriptInDir build [] oneref
+9 silly getExecOpts { cwd: '/Users/antony/home/src/js/oneref/packages/oneref' }
+10 silly runScriptInDir build [] oneref-example-flux-challenge
+11 silly getExecOpts { cwd:
+11 silly getExecOpts    '/Users/antony/home/src/js/oneref/packages/oneref-example-flux-challenge' }
+12 silly runScriptInDir build [] oneref-example-hello-async
+13 silly getExecOpts { cwd:
+13 silly getExecOpts    '/Users/antony/home/src/js/oneref/packages/oneref-example-hello-async' }
+14 silly runScriptInDir build [] oneref-example-multitodo
+15 silly getExecOpts { cwd:
+15 silly getExecOpts    '/Users/antony/home/src/js/oneref/packages/oneref-example-multitodo' }
+16 silly runScriptInDir build [] oneref-example-todo-async-basic
+17 silly getExecOpts { cwd:
+17 silly getExecOpts    '/Users/antony/home/src/js/oneref/packages/oneref-example-todo-async-basic' }
+18 error build Errored while running script in 'oneref-example-multitodo'
+19 error execute callback with error
+20 error Error: Command failed: npm run build
+20 error npm ERR! code ELIFECYCLE
+20 error npm ERR! errno 1
+20 error npm ERR! oneref-example-multitodo@1.0.0 build: `react-scripts build`
+20 error npm ERR! Exit status 1
+20 error npm ERR!
+20 error npm ERR! Failed at the oneref-example-multitodo@1.0.0 build script.
+20 error npm ERR! This is probably not a problem with npm. There is likely additional logging output above.
+20 error
+20 error npm ERR! A complete log of this run can be found in:
+20 error npm ERR!     /Users/antony/.npm/_logs/2019-03-02T21_07_33_663Z-debug.log
+20 error
+20 error > oneref-example-multitodo@1.0.0 build /Users/antony/home/src/js/oneref/packages/oneref-example-multitodo
+20 error > react-scripts build
+20 error
+20 error Creating an optimized production build...
+20 error Failed to compile.
+20 error
+20 error Failed to minify the bundle. Error: static/js/main.69930351.chunk.js from Terser
+20 error TypeError: Cannot read property 'minify' of undefined
+20 error     at compiler.run (/Users/antony/home/src/js/oneref/packages/oneref-example-multitodo/node_modules/react-scripts/scripts/build.js:169:23)
+20 error     at finalCallback (/Users/antony/home/src/js/oneref/packages/oneref-example-multitodo/node_modules/webpack/lib/Compiler.js:210:39)
+20 error     at hooks.done.callAsync.err (/Users/antony/home/src/js/oneref/packages/oneref-example-multitodo/node_modules/webpack/lib/Compiler.js:226:13)
+20 error     at AsyncSeriesHook.eval [as callAsync] (eval at create (/Users/antony/home/src/js/oneref/packages/oneref-example-multitodo/node_modules/tapable/lib/HookCodeFactory.js:32:10), <anonymous>:24:1)
+20 error     at AsyncSeriesHook.lazyCompileHook (/Users/antony/home/src/js/oneref/packages/oneref-example-multitodo/node_modules/tapable/lib/Hook.js:154:20)
+20 error     at onCompiled (/Users/antony/home/src/js/oneref/packages/oneref-example-multitodo/node_modules/webpack/lib/Compiler.js:224:21)
+20 error     at hooks.afterCompile.callAsync.err (/Users/antony/home/src/js/oneref/packages/oneref-example-multitodo/node_modules/webpack/lib/Compiler.js:553:14)
+20 error     at AsyncSeriesHook.eval [as callAsync] (eval at create (/Users/antony/home/src/js/oneref/packages/oneref-example-multitodo/node_modules/tapable/lib/HookCodeFactory.js:32:10), <anonymous>:6:1)
+20 error     at AsyncSeriesHook.lazyCompileHook (/Users/antony/home/src/js/oneref/packages/oneref-example-multitodo/node_modules/tapable/lib/Hook.js:154:20)
+20 error     at compilation.seal.err (/Users/antony/home/src/js/oneref/packages/oneref-example-multitodo/node_modules/webpack/lib/Compiler.js:550:30)
+20 error     at AsyncSeriesHook.eval [as callAsync] (eval at create (/Users/antony/home/src/js/oneref/packages/oneref-example-multitodo/node_modules/tapable/lib/HookCodeFactory.js:32:10), <anonymous>:6:1)
+20 error     at AsyncSeriesHook.lazyCompileHook (/Users/antony/home/src/js/oneref/packages/oneref-example-multitodo/node_modules/tapable/lib/Hook.js:154:20)
+20 error     at hooks.optimizeAssets.callAsync.err (/Users/antony/home/src/js/oneref/packages/oneref-example-multitodo/node_modules/webpack/lib/Compilation.js:1295:35)
+20 error     at AsyncSeriesHook.eval [as callAsync] (eval at create (/Users/antony/home/src/js/oneref/packages/oneref-example-multitodo/node_modules/tapable/lib/HookCodeFactory.js:32:10), <anonymous>:6:1)
+20 error     at AsyncSeriesHook.lazyCompileHook (/Users/antony/home/src/js/oneref/packages/oneref-example-multitodo/node_modules/tapable/lib/Hook.js:154:20)
+20 error     at hooks.optimizeChunkAssets.callAsync.err (/Users/antony/home/src/js/oneref/packages/oneref-example-multitodo/node_modules/webpack/lib/Compilation.js:1286:32)
+20 error Read more here: http://bit.ly/CRA-build-minify
+20 error
+20 error
+20 error     at Promise.all.then.arr (/usr/local/lib/node_modules/lerna/node_modules/execa/index.js:236:11)

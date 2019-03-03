@@ -11,7 +11,7 @@ import React from 'react';
 import TodoAppState from '../todoAppState';
 import TodoTextInput from './TodoTextInput';
 import * as actions from '../actions';
-import {StateTransformer, StateRef, updateState} from 'oneref';
+import {StateTransformer, StateRef, update} from 'oneref';
 
 interface HeaderProps {
   label: string
@@ -22,7 +22,7 @@ const Header = ({ label, stateRef }: HeaderProps) => {
 
   const onSave = (text: string) => {
     if (text.trim()){
-      updateState(stateRef, actions.create(text));
+      update(stateRef, actions.create(text));
     }
   }
 

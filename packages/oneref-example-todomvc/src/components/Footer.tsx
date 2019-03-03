@@ -11,7 +11,7 @@ import React from 'react';
 import TodoItem from '../todoItem';
 import TodoAppState from '../todoAppState';
 import * as actions from '../actions';
-import {StateRef, updateState} from 'oneref';
+import {StateRef, update} from 'oneref';
 import {Seq} from 'immutable';
 import classNames from 'classnames';
 import { ALL_TODOS, ACTIVE_TODOS, COMPLETED_TODOS } from '../constants';
@@ -42,7 +42,7 @@ const Footer = ({ allTodos, nowShowing, stateRef, setNowShowing}: FooterProps) =
     clearCompletedButton =
       <button
         className="clear-completed"
-        onClick={(e) => updateState(stateRef, actions.clearCompleted)}>
+        onClick={(e) => update(stateRef, actions.clearCompleted)}>
         Clear completed ({completed})
       </button>;
   }

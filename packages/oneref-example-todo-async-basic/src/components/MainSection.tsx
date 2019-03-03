@@ -12,7 +12,7 @@ import TodoItem from '../todoItem';
 import TodoItemEditor from './TodoItemEditor';
 import TodoAppState from '../todoAppState';
 import * as actions from '../actions';
-import {StateRef, updateState} from 'oneref';
+import {StateRef, update} from 'oneref';
 import {Seq} from 'immutable';
 
 interface MainSectionProps {
@@ -42,7 +42,7 @@ const MainSection = ({todos, areAllComplete, stateRef}: MainSectionProps) => {
         id="toggle-all"
         className="toggle-all"
         type="checkbox"
-        onChange={() => updateState(stateRef, actions.toggleCompleteAll)}
+        onChange={() => update(stateRef, actions.toggleCompleteAll)}
         checked={areAllComplete}
       />
       <label htmlFor="toggle-all">Mark all as complete</label>

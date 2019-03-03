@@ -1,12 +1,12 @@
 import * as Immutable from 'immutable';
 import * as DT from './dashboardTypes';
-import { StateRef, StateTransformer, updateState, updateStateAsync } from 'oneref';
+import { StateRef, StateTransformer, update, awaitableUpdate } from 'oneref';
 import DashboardAppState from './dashboardAppState';
 
 const sithUrl = (id: string) => `http://localhost:3000/dark-jedis/${id}`
 
 const updateObiWan = async (parsedLocation: any, stateRef: StateRef<DashboardAppState>) => {
-  const [nextSt, oldRequests] = await updateStateAsync(stateRef, state => {
+  const [nextSt, oldRequests] = await awaitableUpdate(stateRef, state => {
     const obiWanLocation = new DT.PlanetInfo(parsedLocation);
     const locState = state.set('obiWanLocation',obiWanLocation);
     return locState.checkMatchingSith();
@@ -35,7 +35,7 @@ async function fetchSithInfo(sithId: number, signal: AbortSignal, stateRef: Stat
   try {
     const response = await fetch(sithUrl(sithId.toString()), {signal});
     const parsedSithStatus = await response.json();
-    const [nextSt, oldRequests] = await updateStateAsync(stateRef, (prevState) => prevState.updateSithStatus(parsedSithStatus));
+    const [nextSt, oldRequests] = await awaitableUpdate(stateRef, (prevState) => prevState.updateSithStatus(parsedSithStatus));
     cancelOldRequests(oldRequests);
     fillView(nextSt, stateRef);
   } catch (err) {
@@ -50,7 +50,7 @@ export function requestSithInfo(append: boolean, sithId: number, stateRef: State
 
   // fill in entry at pos indicating request for the given sith id,
   // and adding request to pending requestsById
-  updateState(stateRef, (st) => st.addPendingRequest(append, sithId, controller));
+  update(stateRef, (st) => st.addPendingRequest(append, sithId, controller));
   // And spawn the async fetch request; note that we don't await the result
   fetchSithInfo(sithId, signal, stateRef);
 }
@@ -71,6 +71,6 @@ export function fillView(st: DashboardAppState, stateRef: StateRef<DashboardAppS
 }
 
 export const scroll = async (scrollAmount: number, stateRef: StateRef<DashboardAppState>): Promise<void> => {
-  const [nextSt, oldRequests] = await updateStateAsync(stateRef, st => st.scrollAdjust(scrollAmount));
+  const [nextSt, oldRequests] = await awaitableUpdate(stateRef, st => st.scrollAdjust(scrollAmount));
   fillView(nextSt, stateRef);
 }

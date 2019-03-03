@@ -1,7 +1,7 @@
 import React from 'react';
 import { PlanetInfo, SithRow } from '../dashboardTypes';
 import DashboardAppState from '../dashboardAppState';
-import { StateRef, updateState } from 'oneref';
+import { StateRef, update } from 'oneref';
 import SithRowViewer from './SithRowViewer';
 import * as actions from '../actions';
 import classNames from 'classnames';

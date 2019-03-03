@@ -33,11 +33,11 @@ export interface StateRefProps<T> {
     stateRef: StateRef<T>
 }
 
-export function updateState<T>(ref: StateRef<T>, tf: StateTransformer<T>) {
+export function update<T>(ref: StateRef<T>, tf: StateTransformer<T>) {
     ref(sr => ({ appState: tf(sr.appState), resolvers: sr.resolvers }))    
 }
 
-export async function updateStateAsync<T, A>(ref: StateRef<T>, tf: StateTransformerAux<T, A>): Promise<[T, A]> {
+export async function awaitableUpdate<T, A>(ref: StateRef<T>, tf: StateTransformerAux<T, A>): Promise<[T, A]> {
     return new Promise((resolve, reject) => {
         ref(sr => {
             const [appState, aux] = tf(sr.appState);
@@ -80,7 +80,7 @@ export const appContainer = <AS extends {}, P extends {} = {},B = {}>(
         if (initEffect) {
             const v = initEffect(containerState.appState, stateRef);
             if (isAsyncIterable(v)) {
-                stStreamReader(tf => updateState(stateRef, tf), v);
+                stStreamReader(tf => update(stateRef, tf), v);
             }
         }   
     }, []);
@@ -105,7 +105,7 @@ export const appContainer = <AS extends {}, P extends {} = {},B = {}>(
  *
  * Given an Outer Type (OT) and Inner Type (IT), and functional setters/getters for how to project and inject the
  * inner type from/to the outer type, return a function that can be used in a Hooks context to obtain the
- * [current state, updateState] functions for the inner type from the outer type and its update function.
+ * [current state, update] functions for the inner type from the outer type and its update function.
  */
 type ProjectFunc<OT, IT> = (o: OT) => IT
 type InjectFunc<OT, IT> = (o: OT, i: IT) => OT  // i.e. functional update
@@ -113,7 +113,7 @@ type FocusFunc<OT, IT> = (o: OT, outerRef: StateRef<OT>) => [IT, StateRef<IT>]
 export const focus =
     <OT extends {},IT extends {}>(view: ProjectFunc<OT,IT>, inject: InjectFunc<OT,IT>): FocusFunc<OT, IT> => (o, outerRef) => {
         /*
-         * This is a little sleazy -- we happen to know that updateState and updateStateAsync are the only
+         * This is a little sleazy -- we happen to know that update and awaitableUpdate are the only
          * functions that use stateRefs, and that they are purely additive with resolvers.
          * So we pass [] in as resolvers, and just map over any resolvers that get added to lift
          * them from IT to OT.
