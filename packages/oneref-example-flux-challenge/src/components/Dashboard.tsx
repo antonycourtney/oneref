@@ -6,15 +6,18 @@ import SithScrollableList from './SithScrollableList';
 
 type DashboardProps = {} & oneref.StateRefProps<DashboardAppState>;
 
-const Dashboard: React.FunctionComponent<DashboardProps> = ({appState, stateRef}: DashboardProps) => {
+const Dashboard: React.FunctionComponent<DashboardProps> = ({
+    appState,
+    stateRef
+}: DashboardProps) => {
     return (
         <div className="app-container">
-        <div className="css-root">
-          <PlanetMonitor currentPlanet={appState.obiWanLocation} />
-          <SithScrollableList appState={appState} stateRef={stateRef} />
+            <div className="css-root">
+                <PlanetMonitor currentPlanet={appState.obiWanLocation} />
+                <SithScrollableList appState={appState} stateRef={stateRef} />
+            </div>
         </div>
-      </div>
-    )
-}
+    );
+};
 
 export default Dashboard;
