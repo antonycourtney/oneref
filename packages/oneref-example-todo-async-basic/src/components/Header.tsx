@@ -11,29 +11,28 @@ import React from 'react';
 import TodoAppState from '../todoAppState';
 import TodoTextInput from './TodoTextInput';
 import * as actions from '../actions';
-import {StateTransformer, StateRef, update} from 'oneref';
+import { StateTransformer, StateRef, update } from 'oneref';
 
 interface HeaderProps {
-  stateRef: StateRef<TodoAppState>
+    stateRef: StateRef<TodoAppState>;
 }
 
 const Header = ({ stateRef }: HeaderProps) => {
+    const onSave = (text: string) => {
+        if (text.trim()) {
+            update(stateRef, actions.create(text));
+        }
+    };
 
-  const onSave = (text: string) => {
-    if (text.trim()){
-      update(stateRef, actions.create(text));
-    }
-  }
-
-  return (
-    <header className="header">
-      <h1>todos</h1>
-      <TodoTextInput
-          className="new-todo"
-          placeholder="What needs to be done?"
-          onSave={onSave}
-        />
-    </header>
-  )
-}
+    return (
+        <header className="header">
+            <h1>todos</h1>
+            <TodoTextInput
+                className="new-todo"
+                placeholder="What needs to be done?"
+                onSave={onSave}
+            />
+        </header>
+    );
+};
 export default Header;

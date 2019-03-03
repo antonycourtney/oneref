@@ -12,40 +12,40 @@ import React from 'react';
 const ENTER_KEY_CODE = 13;
 
 interface InputProps {
-  className?: string
-  id?: string
-  placeholder?: string
-  value?: string
-  onSave: (s: string) => void
+    className?: string;
+    id?: string;
+    placeholder?: string;
+    value?: string;
+    onSave: (s: string) => void;
 }
 
 const TodoTextInput = (props: InputProps) => {
-  const [value, setValue] = React.useState(props.value || '');
+    const [value, setValue] = React.useState(props.value || '');
 
-  const save = () => {
-    props.onSave(value);
-    setValue('');
-  }
+    const save = () => {
+        props.onSave(value);
+        setValue('');
+    };
 
-  const onKeyDown = (e: React.KeyboardEvent) => {
-    if (e.keyCode === ENTER_KEY_CODE) {
-      save();
-    }
-  }
+    const onKeyDown = (e: React.KeyboardEvent) => {
+        if (e.keyCode === ENTER_KEY_CODE) {
+            save();
+        }
+    };
 
-  const className = props.className || '';
+    const className = props.className || '';
 
-  return (
-    <input
-      className={className}
-      id={props.id}
-      placeholder={props.placeholder}
-      onBlur={save}
-      onChange={(e) => setValue(e.target.value)}
-      onKeyDown={onKeyDown}
-      value={value}
-      autoFocus={true}
-    />
-  );
-}
+    return (
+        <input
+            className={className}
+            id={props.id}
+            placeholder={props.placeholder}
+            onBlur={save}
+            onChange={e => setValue(e.target.value)}
+            onKeyDown={onKeyDown}
+            value={value}
+            autoFocus={true}
+        />
+    );
+};
 export default TodoTextInput;

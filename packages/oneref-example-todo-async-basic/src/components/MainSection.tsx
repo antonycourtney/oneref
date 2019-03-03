@@ -12,43 +12,48 @@ import TodoItem from '../todoItem';
 import TodoItemEditor from './TodoItemEditor';
 import TodoAppState from '../todoAppState';
 import * as actions from '../actions';
-import {StateRef, update} from 'oneref';
-import {Seq} from 'immutable';
+import { StateRef, update } from 'oneref';
+import { Seq } from 'immutable';
 
 interface MainSectionProps {
-  todos: Seq.Set<TodoItem>
-  areAllComplete: boolean
-  stateRef: StateRef<TodoAppState>
+    todos: Seq.Set<TodoItem>;
+    areAllComplete: boolean;
+    stateRef: StateRef<TodoAppState>;
 }
 
-const MainSection = ({todos, areAllComplete, stateRef}: MainSectionProps) => {
-  // This section should be hidden by default
-  // and shown when there are todos.
-  if (todos.count() < 1) {
-    return null;
-  }
+const MainSection = ({ todos, areAllComplete, stateRef }: MainSectionProps) => {
+    // This section should be hidden by default
+    // and shown when there are todos.
+    if (todos.count() < 1) {
+        return null;
+    }
 
-  const todosJS = todos.toJS();
-  const todosArr = todos.toArray();
-  let itemEditors = [];
+    const todosJS = todos.toJS();
+    const todosArr = todos.toArray();
+    let itemEditors = [];
 
-  for (var key in todosArr) {
-    itemEditors.push(<TodoItemEditor key={key} todo={todosArr[key]} stateRef={stateRef} />);
-  }
+    for (var key in todosArr) {
+        itemEditors.push(
+            <TodoItemEditor
+                key={key}
+                todo={todosArr[key]}
+                stateRef={stateRef}
+            />
+        );
+    }
 
-  return (
-    <section className="main">
-      <input
-        id="toggle-all"
-        className="toggle-all"
-        type="checkbox"
-        onChange={() => update(stateRef, actions.toggleCompleteAll)}
-        checked={areAllComplete}
-      />
-      <label htmlFor="toggle-all">Mark all as complete</label>
-      <ul className="todo-list">{itemEditors}</ul>
-    </section>
-  );
-
-}
+    return (
+        <section className="main">
+            <input
+                id="toggle-all"
+                className="toggle-all"
+                type="checkbox"
+                onChange={() => update(stateRef, actions.toggleCompleteAll)}
+                checked={areAllComplete}
+            />
+            <label htmlFor="toggle-all">Mark all as complete</label>
+            <ul className="todo-list">{itemEditors}</ul>
+        </section>
+    );
+};
 export default MainSection;

@@ -2,17 +2,17 @@
  * A simulated service providing Todo list entries
  *
  */
-import {utils as onerefUtils} from 'oneref';
+import { utils as onerefUtils } from 'oneref';
 
 const { delay } = onerefUtils;
 
 type TodoListener = (entry: string) => void;
 
 let entries = [
-    "buy milk",
-    "call the doctor",
-    "pay rent",
-    "get wedding present"
+    'buy milk',
+    'call the doctor',
+    'pay rent',
+    'get wedding present'
 ];
 
 const INTERVAL = 2000;
@@ -24,11 +24,11 @@ const postEntry = (subState: string[], listener: TodoListener) => {
     }
     if (subState.length > 0) {
         setTimeout(() => postEntry(subState, listener), INTERVAL);
-    }    
-}
+    }
+};
 
 export const subscribe = (listener: TodoListener) => {
     // initialize subscription state from entries:
     const subState = entries.slice(0);
     setTimeout(() => postEntry(subState, listener), INTERVAL);
-}
+};
