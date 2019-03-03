@@ -4,11 +4,17 @@ import ReactDOM from 'react-dom';
 import MultiTodoListEditor from './components/MultiTodoListEditor';
 import MultiTodoAppState from './multiTodoAppState';
 
-import 'todomvc-common/base.css'
-import 'todomvc-app-css/index.css'
+import 'todomvc-common/base.css';
+import 'todomvc-app-css/index.css';
 
 const initialAppState = new MultiTodoAppState();
 
-const MultiTodoApp = oneref.appContainer<MultiTodoAppState, {}>(initialAppState, MultiTodoListEditor);
+const MultiTodoApp = oneref.appContainer<MultiTodoAppState, {}>(
+    initialAppState,
+    MultiTodoListEditor
+);
 
-ReactDOM.render(<MultiTodoApp />, document.getElementsByClassName('todoapp')[0]);
+ReactDOM.render(
+    <MultiTodoApp />,
+    document.getElementsByClassName('todoapp')[0]
+);
