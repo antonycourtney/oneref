@@ -1,6 +1,6 @@
 {
     "name": "oneref",
-    "version": "0.4.0",
+    "version": "0.4.1",
     "description": "Minimalist Unidirectional Data Flow for React",
     "main": "dist/oneref.js",
     "types": "dist/oneref.d.ts",
@@ -9,20 +9,23 @@
         "type": "git",
         "url": "https://github.com/antonycourtney/oneref.git"
     },
-    "peerDependencies": {},
+    "peerDependencies": {
+        "react": "^16.8.4"
+    },
     "dependencies": {
-        "@types/react": "^16.8.7",
-        "@types/react-dom": "^16.8.2",
-        "react": "^16.8.4",
-        "react-dom": "^16.8.4"
+        "@types/react": "^16.8.7"
     },
     "devDependencies": {
         "prettier": "1.16.4",
-        "rimraf": "^2.6.3"
+        "rimraf": "^2.6.3",
+        "typescript": "^3.3.3333"
     },
     "scripts": {
         "clean": "rimraf dist",
         "build": "tsc",
         "prettier": "prettier --write src/*.ts*"
-    }
+    },
+    "files": [
+        "/dist"
+    ]
 }
