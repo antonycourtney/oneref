@@ -1,7 +1,6 @@
 import TodoItem from './todoItem';
 import TodoAppState from './todoAppState';
-
-type StateTransformer<T> = (s: T) => T;
+import { StateTransformer } from 'oneref';
 
 export const create = (text: string): StateTransformer<TodoAppState> => state =>
     state.addItem(new TodoItem(text));

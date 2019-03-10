@@ -661,3 +661,17 @@ and here is a repository showing the various approaches:
 https://github.com/tylerlong/hello-async
 
 -----
+Other quick thoughts:
+
+For handling streams, instead of returning an AsyncIterable from initEffect, we should probably add:
+
+   updateFromStream(stateRef, asyncIterable<StateTransformer<T>>)
+
+Interestingly, I bet this could be a utility that just calls update.
+   
+We still need to work out how we'll handle things pivotrequester that want to run on every
+state change.
+Might be interesting to make an async function that fulfills on every state change that
+could be used in a loop.
+
+---

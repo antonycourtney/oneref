@@ -11,7 +11,7 @@ import React from 'react';
 import TodoAppState from '../todoAppState';
 import TodoTextInput from './TodoTextInput';
 import * as actions from '../actions';
-import { StateTransformer, StateRef, update } from 'oneref';
+import { StateRef, update } from 'oneref';
 
 interface HeaderProps {
     stateRef: StateRef<TodoAppState>;

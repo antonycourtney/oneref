@@ -9,7 +9,7 @@ import 'todomvc-app-css/index.css';
 
 const initialAppState = new TodoAppState();
 
-const TodoApp = oneref.appContainer<TodoAppState, {}>(
+const TodoApp = oneref.appContainer<TodoAppState>(
     initialAppState,
     TodoListEditor
 );
