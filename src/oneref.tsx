@@ -5,6 +5,8 @@
 import * as React from 'react';
 import { utils } from './utils';
 
+import * as events from 'events';
+
 export type StateTransformer<T> = (s: T) => T;
 // A StateTransformer with an additional calculated value:
 export type StateTransformerAux<T, A> = (s: T) => [T, A];
@@ -19,36 +21,106 @@ export type StateUpdater<T> = (st: StateTransformer<T>) => void;
 // a Promise resolution function for Promise<T>:
 type Resolver<T> = (t: T) => void;
 
-// internal state representation used by oneRef:
-interface StateRep<T> {
+// We will make StateRef<T> opaque, using the intersection
+// types technique described in:
+// https://codemix.com/opaque-types-in-javascript/
+
+type Opaque<K, T> = T & { __TYPE__: K };
+
+// This is our publicly visible interface
+export type StateRef<T> = Opaque<'StateRef', {}>;
+
+// A slightly more precise type for state change listener:
+export type StateChangeListener<T> = (s: T) => void;
+
+// hidden internal representation:
+class RefImpl<T> {
     appState: T;
-    resolvers: Resolver<T>[];
+    emitter: events.EventEmitter;
+
+    // We maintain our own array of listeners
+    // to associate them with integer ids:
+    listeners: StateChangeListener<T>[];
+
+    constructor(v: T) {
+        this.appState = v;
+        this.emitter = new events.EventEmitter();
+        this.listeners = [];
+    }
+
+    getValue(): T {
+        return this.appState;
+    }
+
+    setValue(v: T) {
+        this.appState = v;
+        this.emitter.emit('change', v);
+    }
+
+    // convenience wrapper:
+    updateValue(f: StateTransformer<T>) {
+        this.setValue(f(this.getValue()));
+    }
+
+    addListener(listener: StateChangeListener<T>): number {
+        // check to ensure this listener not yet registered:
+        var idx = this.listeners.indexOf(listener);
+        if (idx === -1) {
+            idx = this.listeners.length;
+            this.listeners.push(listener);
+            this.emitter.on('change', listener);
+        }
+
+        return idx;
+    }
+
+    removeListener(id: number): void {
+        // log.log("removeViewListener: removing listener id ", id)
+        const listener = this.listeners[id];
+        if (listener) {
+            this.emitter.removeListener('change', listener);
+        } else {
+            console.warn('removeListener: No listener found for id ', id);
+        }
+        delete this.listeners[id];
+    }
 }
 
-// Ideally this should be an opaque type outside this module
-export type StateRef<T> = StateUpdater<StateRep<T>>;
+// This is our private, internal only interface
+// We could probably eliminate one level of indirection
+// on the rhs of the intersection type, but the runtime cost should
+// be negligible and it avoids confusion/ambiguity/collisions should
+// we ever extend the public interface for StateRef<T>.
+type StateRefImpl<T> = StateRef<T> & {
+    impl: RefImpl<T>;
+};
 
+export function mkRef<T>(s0: T): StateRef<T> {
+    let ref = { impl: new RefImpl<T>(s0) };
+    return (ref as StateRefImpl<T>) as StateRef<T>;
+}
+
+// props passed in to a React app component by the
+// OneRef appContainer:
 export interface StateRefProps<T> {
     appState: T;
     stateRef: StateRef<T>;
 }
 
 export function update<T>(ref: StateRef<T>, tf: StateTransformer<T>) {
-    ref(sr => ({ appState: tf(sr.appState), resolvers: sr.resolvers }));
+    const ri = ref as StateRefImpl<T>;
+    ri.impl.updateValue(tf);
 }
 
 export async function awaitableUpdate<T, A>(
     ref: StateRef<T>,
     tf: StateTransformerAux<T, A>
 ): Promise<[T, A]> {
+    const ri = ref as StateRefImpl<T>;
     return new Promise(resolve => {
-        ref(sr => {
-            const [appState, aux] = tf(sr.appState);
-            const auxResolver = (s: T) => resolve([appState, aux]);
-            const resolvers = sr.resolvers;
-            resolvers.push(auxResolver);
-            return { appState, resolvers };
-        });
+        const [nextState, aux] = tf(ri.impl.getValue());
+        ri.impl.setValue(nextState);
+        resolve([nextState, aux]);
     });
 }
 
@@ -76,46 +148,22 @@ function isAsyncIterable<S>(
 }
 
 /*
- * A higher-order component that holds the single mutable ref cell for top-level app state
- *
+ * An updated form of AppContainer that registers as a listener
+ * on a free-standing StateRef
  */
-export const appContainer = <AS extends {}, P extends {} = {}, B = {}>(
-    as0: AS,
-    Comp: React.ComponentType<P & StateRefProps<AS>>,
-    initEffect?: InitialStateEffect<AS>,
-    onChangeEffect?: StateChangeEffect<AS>
+
+export const refContainer = <AS extends {}, P extends {} = {}, B = {}>(
+    stateRef: StateRef<AS>,
+    Comp: React.ComponentType<P & StateRefProps<AS>>
 ): React.FunctionComponent<P> => props => {
-    const [containerState, stateRef] = React.useState({
-        appState: as0,
-        resolvers: [] as Resolver<AS>[]
-    });
-
+    const ri = stateRef as StateRefImpl<AS>;
+    const [appState, setAppState] = React.useState(ri.impl.getValue());
     React.useEffect(() => {
-        if (initEffect) {
-            const v = initEffect(containerState.appState, stateRef);
-            if (isAsyncIterable(v)) {
-                stStreamReader(tf => update(stateRef, tf), v);
-            }
-        }
+        ri.impl.addListener((st: AS) => {
+            setAppState(st);
+        });
     }, []);
-
-    React.useEffect(() => {
-        if (onChangeEffect) {
-            onChangeEffect(containerState.appState, stateRef);
-        }
-        let resolver: Resolver<AS> | undefined;
-        while ((resolver = containerState.resolvers.shift()) !== undefined) {
-            resolver(containerState.appState);
-        }
-    });
-
-    return (
-        <Comp
-            {...props}
-            appState={containerState.appState}
-            stateRef={stateRef}
-        />
-    );
+    return <Comp {...props} appState={appState} stateRef={stateRef} />;
 };
 
 /*
@@ -132,32 +180,14 @@ export const focus = <OT extends {}, IT extends {}>(
     view: ProjectFunc<OT, IT>,
     inject: InjectFunc<OT, IT>
 ): FocusFunc<OT, IT> => (o, outerRef) => {
-    /*
-     * This is a little sleazy -- we happen to know that update and awaitableUpdate are the only
-     * functions that use stateRefs, and that they are purely additive with resolvers.
-     * So we pass [] in as resolvers, and just map over any resolvers that get added to lift
-     * them from IT to OT.
-     * You are not expected to understand this; trust the types, Luke.
-     */
-    const innerStateRef: StateRef<IT> = (
-        itf: StateTransformer<StateRep<IT>>
-    ) => {
-        outerRef(({ appState, resolvers }: StateRep<OT>) => {
-            const innerRep: StateRep<IT> = {
-                appState: view(appState),
-                resolvers: []
-            };
-            const auxInnerRep = itf(innerRep);
-            const auxOuterResolvers = auxInnerRep.resolvers.map(ir => (o: OT) =>
-                ir(view(o))
-            );
-            return {
-                appState: inject(appState, auxInnerRep.appState),
-                resolvers: resolvers.concat(auxOuterResolvers)
-            };
-        });
-    };
-    return [view(o), innerStateRef];
+    const ori = outerRef as StateRefImpl<OT>;
+    const innerState = view(o);
+    const innerRef = mkRef(innerState);
+    const iri = innerRef as StateRefImpl<IT>;
+    iri.impl.addListener((istate: IT) => {
+        ori.impl.setValue(inject(ori.impl.getValue(), istate));
+    });
+    return [view(o), innerRef];
 };
 
 export { utils } from './utils';
