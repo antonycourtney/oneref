@@ -152,7 +152,7 @@ function isAsyncIterable<S>(
  * on a free-standing StateRef
  */
 
-export const refContainer = <AS extends {}, P extends {} = {}, B = {}>(
+export const refContainer = <AS extends {}, P extends {} = {}>(
     stateRef: StateRef<AS>,
     Comp: React.ComponentType<P & StateRefProps<AS>>
 ): React.FunctionComponent<P> => props => {
@@ -165,6 +165,14 @@ export const refContainer = <AS extends {}, P extends {} = {}, B = {}>(
     }, []);
     return <Comp {...props} appState={appState} stateRef={stateRef} />;
 };
+
+/*
+ * Simple helper for apps with a single top-level view:
+ */
+export const appContainer = <AS extends {}, P extends {} = {}>(
+    initialState: AS,
+    Comp: React.ComponentType<P & StateRefProps<AS>>
+): React.FunctionComponent<P> => refContainer<AS, P>(mkRef(initialState), Comp);
 
 /*
  * Helper for state composition:
