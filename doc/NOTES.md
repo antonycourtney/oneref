@@ -853,7 +853,7 @@ the top-level refComponent() higher-order component.... :-/
 The situation with the above combination seems to be a shit show, but managed to get the following to work:
 
 1. In target app (e.g. oneref-examples/todomvc): `npm link oneref`
-2. In `oneref` source directory: `ln -s /Users/antony/home/src/js/oneref-examples/todomvc/node_modules/react node_modules/react`
+2. In `oneref` source directory: `npm link ../oneref-examples/multitodo/node_modules/react`
 
 Of course this means we can only build out / test one app or example with oneref at a time, but that'll do...
 

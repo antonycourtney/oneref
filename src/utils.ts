@@ -1,3 +1,4 @@
+import { StateRef, StateTransformer, update } from './core';
 /*
  * some generic utilities that are useful in conjunction with oneref
  */
@@ -54,6 +55,15 @@ namespace utils {
             setTimeout(resolve, waitTime);
         });
         return p;
+    }
+
+    export async function updateFromIterable<AS>(
+        ref: StateRef<AS>,
+        stream: AsyncIterable<StateTransformer<AS>>
+    ): Promise<void> {
+        for await (const st of stream) {
+            update(ref, st);
+        }
     }
 } // namespace
 
