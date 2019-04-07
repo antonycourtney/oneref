@@ -24,11 +24,14 @@ type Resolver<T> = (t: T) => void;
 // We will make StateRef<T> opaque, using the intersection
 // types technique described in:
 // https://codemix.com/opaque-types-in-javascript/
-
+//
 type Opaque<K, T> = T & { __TYPE__: K };
 
 // This is our publicly visible interface
-export type StateRef<T> = Opaque<'StateRef', {}>;
+// We'll also try to include an extra optional member, _inf,
+// that is optional and always omitted, and is present
+// just to help with type inference in client modules.
+export type StateRef<T> = Opaque<'StateRef', { _inf?: T }>;
 
 // A slightly more precise type for state change listener:
 export type StateChangeListener<T> = (s: T) => void;
@@ -86,6 +89,22 @@ class RefImpl<T> {
     }
 }
 
+export function addStateChangeListener<T>(
+    ref: StateRef<T>,
+    listener: StateChangeListener<T>
+): number {
+    const ri = ref as StateRefImpl<T>;
+    return ri.impl.addListener(listener);
+}
+
+export function removeStateChangeListener<T>(
+    ref: StateRef<T>,
+    listenerId: number
+) {
+    const ri = ref as StateRefImpl<T>;
+    ri.impl.removeListener(listenerId);
+}
+
 // This is our private, internal only interface
 // We could probably eliminate one level of indirection
 // on the rhs of the intersection type, but the runtime cost should
@@ -122,6 +141,16 @@ export async function awaitableUpdate<T, A>(
         ri.impl.setValue(nextState);
         resolve([nextState, aux]);
     });
+}
+
+// A simple variant of awaitable update when we don't
+// calculate an auxiliary value:
+export async function awaitableUpdate_<T>(
+    ref: StateRef<T>,
+    tf: StateTransformer<T>
+): Promise<T> {
+    const [st, _] = await awaitableUpdate(ref, st => [tf(st), null]);
+    return st;
 }
 
 /*
