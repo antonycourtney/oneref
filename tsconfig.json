@@ -2,18 +2,15 @@
     "compilerOptions": {
         "outDir": "./dist",
         "declaration": true,
-        "strict": true,        
+        "strict": true,
         "target": "ES5",
-        "lib": [
-            "es6",
-            "dom",
-            "dom.iterable",
-            "esnext.asynciterable"
-        ],
+        "lib": ["es6", "dom", "dom.iterable", "esnext.asynciterable"],
         "jsx": "react",
-        "downlevelIteration": true   
+        "downlevelIteration": true
     },
-    "include": [
-        "./src/*"
-    ]
+    "typedocOptions": {
+        "mode": "modules",
+        "out": "doc/api"
+    },
+    "include": ["./src/*"]
 }

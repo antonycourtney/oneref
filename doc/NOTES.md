@@ -249,7 +249,7 @@ Started to think about:
 -
 -   ...
 -
--                         onClick = {() => runAsync(actions.appAction(...))}
+-                                                 onClick = {() => runAsync(actions.appAction(...))}
     \*/
     export const updateAsync = <T extends {}>(setState: StateSetter<T>) => (pact: Promise<StateTransformer<T>>): void => {
     pact.then(setState);
@@ -857,3 +857,72 @@ The situation with the above combination seems to be a shit show, but managed to
 
 Of course this means we can only build out / test one app or example with oneref at a time, but that'll do...
 
+---
+
+Redux Hooks API discussion thread:
+
+https://github.com/reduxjs/react-redux/issues/1179
+
+Another state mgmt lib built with hooks:
+
+https://medium.com/javascript-in-plain-english/state-management-with-react-hooks-no-redux-or-context-api-8b3035ceecf8
+
+---
+
+4/14:
+
+I made a mistake in Tabli that I should probably ack explicitly in writeup:
+
+S port mostly complete, but I think I've spotted a mistake:
+
+I've been using
+
+```typescript
+type XProps = XBaseProps & oneref.StateRefProps<TabManagerState>;
+```
+
+in lots of places. This requires us to pass an entire appState down the component hierarchy.
+The problem with this is that it won't work well with memoization at all; the appState will change
+frequently, even though little should change as we move down the state tree. We'd like to be
+able to memoize TabItemUI and FilterWindowUI, which requires that those only take individual
+windows and tabs as props.
+
+It looks like the only reason I'm passing around `appState` is because several actions take
+`appState` as an argument. These should instead be passed just a stateRef, and we should
+provide a synchronous `read` or `get` (or perhaps `mutableGet` or `getLatest`) to read
+the current appState from the stateRef, but **we should only do this inside an action, never in a component.**
+So `mutableGet` seems like a good name, since it hopefully clarifies that we should never use it
+in a memoized function...
+
+---
+
+For explaining why awaitableUpdate is needed:
+
+Simple fact is that sometimes platform APIs require us to perform a chain
+of operations, and later operations in a chain might depend on state
+updates that have happened in the interim.
+(Again: Would be good to find a concise example...maybe something from Flux
+challenge?)
+
+One example (from Tabli): With the popout window, we want to ensure only
+one popout window is open. If we find an existing popout window, we
+want to close this (an async operation), and only open the new
+popout window when the close operation succeeds (and our state has been
+updated).
+(What could happen if we don't get this right, and just blindly trust in
+the async ops: Many fast clicks on popout button resulting in opening
+many orphaned popup windows.)
+
+---
+API docs:
+
+Briefly tried:
+        "typedoc": "typedoc --out doc/api --module oneref ./src/core.tsx"
+
+but it's dated and output is wonky (doesn't seem to understand re-exports, etc.).
+
+This seems to be a decent example of producing decent looking API docs from
+TypeScript using jsdoc on the generated .js and .d.ts output:
+    https://github.com/yamdbf/core
+generated docs:
+    https://yamdbf.js.org/

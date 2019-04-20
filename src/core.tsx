@@ -126,6 +126,33 @@ export interface StateRefProps<T> {
     stateRef: StateRef<T>;
 }
 
+/**
+ * Get the current value of the state referred to by `ref`.
+ * The name here is intended as a warning to the caller that this
+ * will usually return different values when called on the same
+ * ref cell. As such, this should never be called from pure / memoized
+ * fucntions (such as React functional components); it should only
+ * be called from side-effecting action handlers.
+ * @param ref stateRef to be read
+ */
+export function mutableGet<T>(ref: StateRef<T>): T {
+    const ri = ref as StateRefImpl<T>;
+    return ri.impl.getValue();
+}
+
+/**
+ *
+ * Apply an update asynchronously to a stateRef.
+ *
+ * This function schedules an update to be applied to the given stateRef.
+ * This will not result in any change to the state referenced by
+ * stateRef within the current tick; this schedules an update to
+ * apply on a subsequent tick.
+ *
+ * @param ref stateRef to update
+ * @param tf `State => State` function to calculate new state from current state.
+ *
+ */
 export function update<T>(ref: StateRef<T>, tf: StateTransformer<T>) {
     const ri = ref as StateRefImpl<T>;
     ri.impl.updateValue(tf);
