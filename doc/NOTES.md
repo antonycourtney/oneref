@@ -249,7 +249,7 @@ Started to think about:
 -
 -   ...
 -
--                                                 onClick = {() => runAsync(actions.appAction(...))}
+-                                                       onClick = {() => runAsync(actions.appAction(...))}
     \*/
     export const updateAsync = <T extends {}>(setState: StateSetter<T>) => (pact: Promise<StateTransformer<T>>): void => {
     pact.then(setState);
@@ -914,15 +914,16 @@ the async ops: Many fast clicks on popout button resulting in opening
 many orphaned popup windows.)
 
 ---
+
 API docs:
 
 Briefly tried:
-        "typedoc": "typedoc --out doc/api --module oneref ./src/core.tsx"
+"typedoc": "typedoc --out doc/api --module oneref ./src/core.tsx"
 
 but it's dated and output is wonky (doesn't seem to understand re-exports, etc.).
 
 This seems to be a decent example of producing decent looking API docs from
 TypeScript using jsdoc on the generated .js and .d.ts output:
-    https://github.com/yamdbf/core
+https://github.com/yamdbf/core
 generated docs:
-    https://yamdbf.js.org/
+https://yamdbf.js.org/
