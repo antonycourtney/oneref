@@ -249,7 +249,7 @@ Started to think about:
 -
 -   ...
 -
--                                                       onClick = {() => runAsync(actions.appAction(...))}
+-                                                           onClick = {() => runAsync(actions.appAction(...))}
     \*/
     export const updateAsync = <T extends {}>(setState: StateSetter<T>) => (pact: Promise<StateTransformer<T>>): void => {
     pact.then(setState);
@@ -854,6 +854,7 @@ The situation with the above combination seems to be a shit show, but managed to
 
 1. In target app (e.g. oneref-examples/todomvc): `npm link oneref`
 2. In `oneref` source directory: `npm link ../oneref-examples/multitodo/node_modules/react`
+(For Tabli: `npm link ../../chrome-extensions/tabli/node_modules/react` )
 
 Of course this means we can only build out / test one app or example with oneref at a time, but that'll do...
 
@@ -927,3 +928,19 @@ TypeScript using jsdoc on the generated .js and .d.ts output:
 https://github.com/yamdbf/core
 generated docs:
 https://yamdbf.js.org/
+
+---
+
+4/29/19:
+
+Discussion by jlongster on state and async effects:
+
+[Dancing Between State and Effects](https://github.com/facebook/react/issues/15240)
+
+Interested related work in that thread: [Tiny Atom](https://kidkarolis.github.io/tiny-atom/)
+
+Other related work:
+
+[reactn by Charles Stover](https://medium.com/@Charles_Stover/no-boilerplate-global-state-management-in-react-41e905944eb7)
+
+[easy-peasy](https://github.com/ctrlplusb/easy-peasy) -- A wrapper around Redux to reduce boilerplate.

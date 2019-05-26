@@ -229,15 +229,15 @@ type ProjectFunc<OT, IT> = (o: OT) => IT;
 type InjectFunc<OT, IT> = (o: OT, i: IT) => OT; // i.e. functional update
 type FocusFunc<OT, IT> = (o: OT, outerRef: StateRef<OT>) => [IT, StateRef<IT>];
 export const focus = <OT extends {}, IT extends {}>(
-    view: ProjectFunc<OT, IT>,
+    project: ProjectFunc<OT, IT>,
     inject: InjectFunc<OT, IT>
 ): FocusFunc<OT, IT> => (o, outerRef) => {
     const ori = outerRef as StateRefImpl<OT>;
-    const innerState = view(o);
+    const innerState = project(o);
     const innerRef = mkRef(innerState);
     const iri = innerRef as StateRefImpl<IT>;
     iri.impl.addListener((istate: IT) => {
         ori.impl.setValue(inject(ori.impl.getValue(), istate));
     });
-    return [view(o), innerRef];
+    return [project(o), innerRef];
 };

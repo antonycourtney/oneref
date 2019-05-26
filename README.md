@@ -6,7 +6,8 @@ state management library for React.
 OneRef is based on maintaining application state in a purely functional
 (immutable) data structure, typically using a library such as [Immutable.js](https://facebook.github.io/immutable-js/). A value of this type is stored in a single top-level mutable ref cell.
 
-See **blog post (TODO: link!)** and companion **examples repository(TODO: link!)** for details on how to use this library.
+OneRef is described in a pair of companion blog posts: [A Tutorial Introduction to OneRef](https://antsrants.dev/oneref-intro/) and [Asynchrony Support in OneRef](https://antsrants.dev/oneref-async/).
+Also see the [oneref-examples repository](https://github.com/antonycourtney/oneref-examples) for several runnable examples.
 
 # Building the Library
 
@@ -16,7 +17,7 @@ To install necessary build dependencies:
 
     npm install
 
-To build the library in a form suitable for publishing:
+To build the library:
 
     npm run build
 
