@@ -78,7 +78,6 @@ class RefImpl<T> {
     }
 
     removeListener(id: number): void {
-        // log.log("removeViewListener: removing listener id ", id)
         const listener = this.listeners[id];
         if (listener) {
             this.emitter.removeListener('change', listener);
@@ -86,6 +85,11 @@ class RefImpl<T> {
             console.warn('removeListener: No listener found for id ', id);
         }
         delete this.listeners[id];
+    }
+
+    getListenerCount(): number {
+        const count = this.listeners.reduce(x => x + 1, 0);
+        return count;
     }
 }
 
@@ -182,21 +186,31 @@ export async function awaitableUpdate_<T>(
 
 /*
  * An updated form of AppContainer that registers as a listener
- * on a free-standing StateRef
+ * on a free-standing StateRef.
+ * Returns pair of FunctionComponent and Listener id
  */
 
 export const refContainer = <AS extends {}, P extends {} = {}>(
     stateRef: StateRef<AS>,
     Comp: React.ComponentType<P & StateRefProps<AS>>
-): React.FunctionComponent<P> => props => {
-    const ri = stateRef as StateRefImpl<AS>;
-    const [appState, setAppState] = React.useState(ri.impl.getValue());
-    React.useEffect(() => {
-        ri.impl.addListener((st: AS) => {
-            setAppState(st);
-        });
-    }, []);
-    return <Comp {...props} appState={appState} stateRef={stateRef} />;
+): [React.FunctionComponent<P>, number] => {
+    let innerListener: StateChangeListener<AS> | null = null;
+    const listenerId = addStateChangeListener(stateRef, (st: AS) => {
+        if (innerListener) {
+            innerListener(st);
+        }
+    });
+    const component: React.FunctionComponent<P> = (props: P) => {
+        const ri = stateRef as StateRefImpl<AS>;
+        const [appState, setAppState] = React.useState(ri.impl.getValue());
+        React.useEffect(() => {
+            innerListener = (st: AS) => {
+                setAppState(st);
+            };
+        }, []);
+        return <Comp {...props} appState={appState} stateRef={stateRef} />;
+    };
+    return [component, listenerId];
 };
 
 // ?? TODO: add optional cleanup handler:
@@ -215,7 +229,8 @@ export const appContainer = <AS extends {}, P extends {} = {}>(
     if (initEffect != null) {
         initEffect(initialState, ref);
     }
-    return refContainer<AS, P>(ref, Comp);
+    const [component, _] = refContainer<AS, P>(ref, Comp);
+    return component;
 };
 
 /*
