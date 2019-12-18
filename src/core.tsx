@@ -56,6 +56,14 @@ class RefImpl<T> {
     }
 
     setValue(v: T) {
+        /*
+         * Redundant setValue optimization.
+         * This optimization will fail (silently suppress state updates) if
+         * you attempt to use a mutable object as a state value with oneref.
+         */
+        if (this.appState === v) {
+            return;
+        }
         this.appState = v;
         this.emitter.emit('change', v);
     }
