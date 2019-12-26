@@ -1,6 +1,6 @@
 {
     "name": "oneref",
-    "version": "0.6.2",
+    "version": "0.7.0",
     "description": "Minimalist Unidirectional Data Flow for React",
     "main": "dist/oneref.js",
     "types": "dist/oneref.d.ts",
@@ -14,8 +14,10 @@
     },
     "dependencies": {
         "@types/events": "^3.0.0",
+        "@types/lodash": "^4.14.149",
         "@types/react": "^16.9.13",
-        "events": "^3.0.0"
+        "events": "^3.0.0",
+        "lodash": "^4.17.15"
     },
     "devDependencies": {
         "csstype": "^2.6.7",

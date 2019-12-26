@@ -4,8 +4,10 @@
 
 import * as React from 'react';
 import { utils } from './utils';
-
+import debounce from 'lodash/debounce';
 import * as events from 'events';
+
+const _ = { debounce };
 
 export type StateTransformer<T> = (s: T) => T;
 // A StateTransformer with an additional calculated value:
@@ -45,10 +47,15 @@ class RefImpl<T> {
     // to associate them with integer ids:
     listeners: StateChangeListener<T>[];
 
+    transactionDepth: number;
+    dirty: boolean;
+
     constructor(v: T) {
         this.appState = v;
         this.emitter = new events.EventEmitter();
         this.listeners = [];
+        this.transactionDepth = 0;
+        this.dirty = false;
     }
 
     getValue(): T {
@@ -65,7 +72,28 @@ class RefImpl<T> {
             return;
         }
         this.appState = v;
-        this.emitter.emit('change', v);
+        if (this.transactionDepth > 0) {
+            this.dirty = true;
+        } else {
+            this.notifyListeners();
+        }
+    }
+
+    notifyListeners() {
+        this.emitter.emit('change', this.appState);
+    }
+
+    beginTransaction() {
+        this.transactionDepth++;
+    }
+
+    endTransaction() {
+        if (--this.transactionDepth === 0) {
+            if (this.dirty) {
+                this.notifyListeners();
+                this.dirty = false;
+            }
+        }
     }
 
     // convenience wrapper:
@@ -192,6 +220,16 @@ export async function awaitableUpdate_<T>(
     return st;
 }
 
+export function beginTransaction<T>(ref: StateRef<T>) {
+    const ri = ref as StateRefImpl<T>;
+    ri.impl.beginTransaction();
+}
+
+export function endTransaction<T>(ref: StateRef<T>) {
+    const ri = ref as StateRefImpl<T>;
+    ri.impl.endTransaction();
+}
+
 /*
  * An updated form of AppContainer that registers as a listener
  * on a free-standing StateRef.
@@ -200,14 +238,19 @@ export async function awaitableUpdate_<T>(
 
 export const refContainer = <AS extends {}, P extends {} = {}>(
     stateRef: StateRef<AS>,
-    Comp: React.ComponentType<P & StateRefProps<AS>>
+    Comp: React.ComponentType<P & StateRefProps<AS>>,
+    debounceWait?: number
 ): [React.FunctionComponent<P>, number] => {
     let innerListener: StateChangeListener<AS> | null = null;
-    const listenerId = addStateChangeListener(stateRef, (st: AS) => {
+    const outerListener = (st: AS) => {
         if (innerListener) {
             innerListener(st);
         }
-    });
+    };
+    const debouncedListener = debounceWait
+        ? _.debounce(outerListener, debounceWait)
+        : outerListener;
+    const listenerId = addStateChangeListener(stateRef, debouncedListener);
     const component: React.FunctionComponent<P> = (props: P) => {
         const ri = stateRef as StateRefImpl<AS>;
         const [appState, setAppState] = React.useState(ri.impl.getValue());
